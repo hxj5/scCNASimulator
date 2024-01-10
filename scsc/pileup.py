@@ -1,5 +1,11 @@
+# pileup.py - pileup reads or UMIs from scRNA-seq BAM file.
+#
+# This file and files in the folder "plp" were initially designed for the 
+# "xcltk pileup" module in python package "xcltk" for XClone preprocessing.
+#
+# Note: 
+# - now it only supports 10x data.
 
-# Note: now it only supports 10x data.
 
 import getopt
 import multiprocessing
@@ -21,6 +27,7 @@ from .plp.thread import ThreadData
 from .plp.utils import load_region_from_txt, load_snp_from_vcf, \
     load_snp_from_tsv, merge_mtx, merge_tsv, rewrite_mtx
 from .plp.zfile import zopen, ZF_F_GZIP, ZF_F_PLAIN
+
 
 def prepare_config(conf):
     """Prepare configures for downstream analysis
@@ -133,6 +140,7 @@ def prepare_config(conf):
 
     return(0)
 
+
 def usage(fp = sys.stderr):
     s =  "\n" 
     s += "Usage: %s %s <options>\n" % (APP, COMMAND)  
@@ -154,7 +162,7 @@ def usage(fp = sys.stderr):
     s += "  --minCOUNT INT         Mininum aggragated count for SNP [%d]\n" % CFG_MIN_COUNT
     s += "  --minMAF FLOAT         Mininum minor allele fraction for SNP [%f]\n" % CFG_MIN_MAF
     s += "  --outputAllReg         If set, output all inputted regions.\n"
-    s += "  --countDupHap          If set, UMIs aligned to both haplotypes will be counted\n"
+    s += "  --countDupHap          If set, UMIs aligned to both haplotypes will be counted.\n"
     s += "\n"
     s += "Read filtering:\n"
     s += "  --inclFLAG INT    Required flags: skip reads with all mask bits unset [%d]\n" % CFG_INCL_FLAG
@@ -167,8 +175,10 @@ def usage(fp = sys.stderr):
 
     fp.write(s)
 
+
 def show_progress(rv = None):
     return(rv)
+
 
 def pileup(argv):
     """Core part
@@ -411,10 +421,14 @@ def pileup(argv):
 
     return(ret)
 
+
 def run():
     pileup(sys.argv)
 
+
 COMMAND = "pileup"
+
 
 if __name__ == "__main__":
     run()
+

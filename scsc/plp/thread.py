@@ -64,3 +64,4 @@ class ThreadData:
         s += "%s\n" % prefix
 
         fp.write(s)
+

@@ -5,6 +5,7 @@ from functools import cmp_to_key
 from intervaltree import IntervalTree
 import numpy as np
 
+
 class Region:
     """Region class
     @param chrom   Chromosome name [str]
@@ -46,6 +47,7 @@ class Region:
 
     def get_len(self):
         return self.len
+
 
 class RegionSet:
     """Region set with payload
@@ -191,6 +193,7 @@ class RegionSet:
                 self.citem[chrom] = self.__sort_items(self.citem[chrom])
                 self.is_sorted[chrom] = True
 
+
 class SNP(Region):
     """Phased SNP
     @param chrom    Chromosome name [str]
@@ -215,6 +218,7 @@ class SNP(Region):
     def get_region_allele_index(self, base):
         return self.gt[base] if base in self.gt else -1
     
+
 class SNPSet(RegionSet):
     """A set of phased SNPs"""
     def __init__(self, is_uniq = False):
@@ -222,6 +226,7 @@ class SNPSet(RegionSet):
 
     def add(self, snp):
         return super().add(snp)
+
 
 class BlockRegion(Region):
     """Block Region
@@ -236,11 +241,14 @@ class BlockRegion(Region):
         self.name = name
         self.snp_list = snp_list
 
+
 def format_chrom(chrom):
     return chrom[3:] if chrom.lower().startswith("chr") else chrom
+
 
 REG_EXON = 1
 REG_INTRON = 2
 
 if __name__ == "__main__":
     pass
+

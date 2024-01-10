@@ -10,6 +10,7 @@ from .mcount import MCount
 from .sam import check_read, sam_fetch
 from .zfile import zopen, ZF_F_GZIP
 
+
 def sp_region(reg, conf):
     reg_ref_umi = {smp:set() for smp in conf.barcodes}
     reg_alt_umi = {smp:set() for smp in conf.barcodes}
@@ -65,6 +66,7 @@ def sp_region(reg, conf):
         reg_dp_cnt[smp]  = len(dp_umi)
     
     return((0, reg_ref_cnt, reg_alt_cnt, reg_oth_cnt, reg_dp_cnt, reg_ref_umi, reg_alt_umi, reg_oth_umi))
+
 
 # TODO: use clever IPC (Inter-process communication) instead of naive `raise Error`.
 # NOTE: 
@@ -197,3 +199,4 @@ def sp_count(thdata):
             pickle.dump(thdata, fp_td)
             
     return((0, thdata))
+

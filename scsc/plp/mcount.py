@@ -1,7 +1,9 @@
 # Reads Counting
 # Author: Xianjie Huang
 
-from ...utils.sam import get_query_bases
+
+from .sam import get_query_bases
+
 
 class UCount:
     """Counting Unit
@@ -35,6 +37,7 @@ class UCount:
 
     def stat(self):
         return(0)
+
 
 class SCount:
     """Counting for single sample
@@ -86,6 +89,7 @@ class SCount:
                     idx = self.mcnt.base_idx[allele]
                 self.tcount[idx] += 1
         return(0)
+
 
 class MCount:
     """Counting for multiple samples
@@ -153,3 +157,4 @@ class MCount:
             for j in range(len(self.tcount)):
                 self.tcount[j] += scnt.tcount[j]
         return(0)
+

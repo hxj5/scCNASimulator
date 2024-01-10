@@ -3,6 +3,7 @@
 import sys
 from ..config import APP
 
+
 class Config:
     def __init__(self):
         self.sam_fn = None
@@ -37,6 +38,7 @@ class Config:
         self.out_ad_fn = None
         self.out_dp_fn = None
         self.out_oth_fn = None   
+
 
     def show(self, fp = None, prefix = ""):
         if fp is None:
@@ -84,8 +86,10 @@ class Config:
 
         fp.write(s)
 
+
     def use_umi(self):
         return self.umi_tag is not None
+
 
 CFG_DEBUG = 0
 CFG_CELL_TAG = "CB"
@@ -107,3 +111,4 @@ CFG_NO_ORPHAN = True
 if __name__ == "__main__":
     conf = Config()
     conf.show()
+

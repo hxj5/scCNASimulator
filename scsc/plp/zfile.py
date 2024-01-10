@@ -8,8 +8,10 @@
 # So we need to use gzip to read GZIP and BGZIP files
 # it's probably ok to use pysam to write BGZIP files.
 
+
 import pysam
 import gzip
+
 
 class ZFile:
     """Simple File object wrapper that supports plain/gzip/bgzip
@@ -109,12 +111,14 @@ class ZFile:
             return(ret)
         return(len(data))
 
+
 def zopen(file_name, mode, file_type = None, is_bytes = False, encoding = None):
     if not file_name:
         raise OSError()
     if file_type is None:
         file_type = ZF_F_AUTO
     return ZFile(file_name, mode, file_type, is_bytes, encoding)
+
 
 ZF_F_PLAIN = 0
 ZF_F_GZIP = 1
@@ -123,6 +127,8 @@ ZF_F_AUTO = 3
 
 ZF_BUFSIZE = 1048576   # 1M
 
+
 # TODO: update the debugging codes below
 if __name__ == "__main__":
     pass     
+
