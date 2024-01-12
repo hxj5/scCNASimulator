@@ -37,7 +37,7 @@ def load_region_from_txt(fn, sep = "\t", verbose = False):
 
 def load_snp_from_tsv(fn, verbose = False):
     """Load phased SNPs from TSV file.
-    @param fn       Path to TSV file containing 6 columns with header [str]:
+    @param fn       Path to TSV file containing 6 columns without header [str]:
                     <chrom> <pos> <ref> <alt> <ref_hap> <alt_hap>
     @param verbose  If print detailed log info [bool]
     @return    A SNPSet object if success, None otherwise.
@@ -50,8 +50,8 @@ def load_snp_from_tsv(fn, verbose = False):
         sys.stderr.write("[I::%s] start to load SNPs from tsv '%s' ...\n" % (func, fn))
     for line in fp:
         nl += 1
-        if nl == 1:
-            continue
+        #if nl == 1:
+        #    continue
         parts = line.rstrip().split("\t")
         if len(parts) < 6:
             if verbose:
