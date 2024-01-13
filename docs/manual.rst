@@ -108,6 +108,7 @@ Note that **this input file should not contain a header line**.
 An example is as follows:
 
 .. code-block::
+
    clone_0      chr1    1000    28000   1       2
    clone_0      chr2    320000  560000  0       1
    clone_1      chr2    320000  560000  1       0
@@ -151,6 +152,7 @@ Note that **this input file should not contain a header line**.
 An example is as follows:
 
 .. code-block::
+
    AAAAACGTACGTAAAA-1   clone_0
    ACGTAAAAAGGTACGT-1   clone_0
    ACGTACGTATGTAAAA-1   clone_0
@@ -188,6 +190,7 @@ Note that **this input file should not contain a header line**.
 An example is as follows:
 
 .. code-block::
+
    AAAAACGTACGTAAAA-1   chr1:1000-28000 AAGTACGTACGT    0
    AAAAACGTACGTAAAA-1   chr1:1000-28000 ACGTACGTACGT    1
    AAAAACGTACGTAAAA-1   chr1:1000-28000 AGGTACGTACGT    1
