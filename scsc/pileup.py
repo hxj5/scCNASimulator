@@ -26,7 +26,7 @@ from .plp.core import sp_count
 from .plp.thread import ThreadData
 from .plp.utils import load_region_from_txt, load_snp_from_vcf, \
     load_snp_from_tsv, merge_mtx, merge_tsv, rewrite_mtx
-from .plp.zfile import zopen, ZF_F_GZIP, ZF_F_PLAIN
+from .zfile import zopen, ZF_F_GZIP, ZF_F_PLAIN
 
 
 def prepare_config(conf):

@@ -2,8 +2,8 @@
 
 import os
 import sys
-from .region import SNP, SNPSet, BlockRegion
-from .zfile import zopen, ZF_F_GZIP, ZF_F_PLAIN
+from ..region import SNP, SNPSet, BlockRegion
+from ..zfile import zopen, ZF_F_GZIP, ZF_F_PLAIN
 
 
 def load_region_from_txt(fn, sep = "\t", verbose = False):

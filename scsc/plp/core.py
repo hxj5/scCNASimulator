@@ -7,8 +7,27 @@ import pysam
 import sys
 
 from .mcount import MCount
-from .sam import check_read, sam_fetch
-from .zfile import zopen, ZF_F_GZIP
+from ..sam import sam_fetch
+from ..zfile import zopen, ZF_F_GZIP
+
+
+def check_read(read, conf):
+    if read.mapq < conf.min_mapq:
+        return(-2)
+    if conf.excl_flag and read.flag & conf.excl_flag:
+        return(-3)
+    if conf.incl_flag and not read.flag & conf.incl_flag:
+        return(-4)
+    if conf.no_orphan and read.flag & BAM_FPAIRED and not \
+        read.flag & BAM_FPROPER_PAIR:
+        return(-5)
+    if conf.cell_tag and not read.has_tag(conf.cell_tag):
+        return(-11)
+    if conf.umi_tag and not read.has_tag(conf.umi_tag):
+        return(-12)
+    if len(read.positions) < conf.min_len:
+        return(-21)
+    return(0)
 
 
 def sp_region(reg, conf):
