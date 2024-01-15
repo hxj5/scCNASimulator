@@ -2,7 +2,7 @@
 
 import os
 import sys
-from ..region import SNP, SNPSet, BlockRegion
+from .region import SNP, SNPSet, BlockRegion
 from ..zfile import zopen, ZF_F_GZIP, ZF_F_PLAIN
 
 
@@ -10,9 +10,9 @@ def load_region_from_txt(fn, sep = "\t", verbose = False):
     """Load regions from plain file.
     @param fn       Path to plain file [str]
     @param verbose  If print detailed log info [bool]
-    @return    A list of BlockRegion objects if success, None otherwise.
-    @note      The first 4 columns of the plain file should be
-                 chrom, start, end (both 1-based, inclusive), name
+    @return         A list of BlockRegion objects if success, None otherwise.
+    @note           The first 4 columns of the plain file should be
+                    chrom, start, end (both 1-based, inclusive), name
     """
     func = "load_region_from_txt"
     fp = zopen(fn, "rt")
@@ -40,7 +40,7 @@ def load_snp_from_tsv(fn, verbose = False):
     @param fn       Path to TSV file containing 6 columns without header [str]:
                     <chrom> <pos> <ref> <alt> <ref_hap> <alt_hap>
     @param verbose  If print detailed log info [bool]
-    @return    A SNPSet object if success, None otherwise.
+    @return         A SNPSet object if success, None otherwise.
     """
     func = "load_snp_from_tsv"
     fp = zopen(fn, "rt")
@@ -92,7 +92,7 @@ def load_snp_from_vcf(fn, verbose = False):
     """Load phased SNPs from VCF file.
     @param fn       Path to VCF file [str]
     @param verbose  If print detailed log info [bool]
-    @return    A SNPSet object if success, None otherwise.
+    @return         A SNPSet object if success, None otherwise.
     """
     func = "load_snp_from_vcf"
     fp = zopen(fn, "rt")

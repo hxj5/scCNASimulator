@@ -7,6 +7,8 @@ import os
 import pysam
 import sys
 
+from .region import format_chrom
+
 
 def assert_e(path):
     if path is None or not os.path.exists(path):
@@ -44,10 +46,6 @@ def get_clones(cells, frac0, seed = 123):
     clone1 = set(cells).difference(clone0)
 
     return (clone0, clone1)
-
-
-def format_chrom(chrom):
-    return chrom[3:] if chrom.startswith("chr") else chrom
 
 
 # e.g., xcltk/preprocess/data/annotate_genes_hg38_update_20230126.txt

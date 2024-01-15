@@ -6,7 +6,9 @@ import numpy as np
 import os
 import pysam
 import sys
+
 from .config import APP, VERSION
+from .region import format_chrom
 
 
 # in_sam: input sam/bam;
