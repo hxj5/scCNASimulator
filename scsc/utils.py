@@ -7,7 +7,7 @@ import os
 import pysam
 import sys
 
-from .region import format_chrom
+from .lib.region import format_chrom
 
 
 def assert_e(path):
