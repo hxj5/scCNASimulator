@@ -116,22 +116,22 @@ An example is as follows:
    clone_2      chr18   1       Inf     2       2
 
 
-By specifying different values for ``cnv_ale0`` and ``cnv_ale1``, you may
+By specifying different values for ``cn_ale0`` and ``cn_ale1``, you may
 mimic various CNV types, including copy gain (e.g., setting ``1, 2``), 
 copy loss (e.g., setting ``0, 1``), LOH (e.g., setting ``2, 0``).
 
 This format fully support allele-specific CNVs.
 For instance, to simulate the scenario that two subclones have copy loss in
-the same region while on distinct alleles, setting ``cnv_ale0, cnv_ale1``
+the same region while on distinct alleles, setting ``cn_ale0, cn_ale1``
 to ``0, 1`` and ``1, 0`` in two subclones, respectively, as the
 above example shows.
 
-It also supports WGD, e.g., by setting ``cnv_ale0, cnv_ale1`` of all 
+It also supports WGD, e.g., by setting ``cn_ale0, cn_ale1`` of all 
 chromosomes to ``2, 2``.
 Generally, detecting WGD from scRNA-seq data is challenging, as it is hard
 to distinguish WGD from high library size.
 One scenario eaiser to detect WGD is that a balanced copy loss occurred 
-after WGD, e.g., ``cnv_ale0, cnv_ale1`` of chr3 and other chromosomes are
+after WGD, e.g., ``cn_ale0, cn_ale1`` of chr3 and other chromosomes are
 ``1, 1`` and ``2, 2`` respectively.
 In this case, chr3 may have signals of balanced BAF while copy-loss RDR,
 which should not happen on normal diploid genome.

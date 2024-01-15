@@ -7,11 +7,11 @@ from ..lib.zfile import zopen, ZF_F_GZIP, ZF_F_PLAIN
 
 
 def load_region_from_txt(fn, sep = "\t", verbose = False):
-    """Load regions from plain file.
-    @param fn       Path to plain file [str]
+    """Load regions from file.
+    @param fn       Path to file [str]
     @param verbose  If print detailed log info [bool]
     @return         A list of BlockRegion objects if success, None otherwise.
-    @note           The first 4 columns of the plain file should be
+    @note           The first 4 columns of the file should be
                     chrom, start, end (both 1-based, inclusive), name
     """
     func = "load_region_from_txt"
