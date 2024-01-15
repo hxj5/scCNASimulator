@@ -2,7 +2,7 @@
 # Author: Xianjie Huang
 
 
-from ..lib.region import Region, RegionSet
+from ..blib.region import Region, RegionSet
 
 
 class SNP(Region):

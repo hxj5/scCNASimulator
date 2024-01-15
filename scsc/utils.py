@@ -8,8 +8,8 @@ import os
 import pysam
 import sys
 
-from .lib.region import format_chrom
-from .lib.zfile import zopen
+from .blib.region import format_chrom
+from .blib.zfile import zopen
 from .cnv import CloneCNVProfile
 
 

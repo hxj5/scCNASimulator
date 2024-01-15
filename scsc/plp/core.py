@@ -7,8 +7,8 @@ import pysam
 import sys
 
 from .mcount import MCount
-from ..lib.sam import sam_fetch
-from ..lib.zfile import zopen, ZF_F_GZIP
+from ..blib.sam import sam_fetch
+from ..blib.zfile import zopen, ZF_F_GZIP
 
 
 def check_read(read, conf):

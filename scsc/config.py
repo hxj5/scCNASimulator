@@ -1,7 +1,7 @@
 # config.py - global configuration
 
 
-from .lib.region import format_chrom
+from .blib.region import format_chrom
 
 
 class Config:

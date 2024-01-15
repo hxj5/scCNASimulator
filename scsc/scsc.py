@@ -8,7 +8,7 @@ import pysam
 import sys
 
 from .config import APP, VERSION
-from .lib.region import format_chrom
+from .blib.region import format_chrom
 
 
 # in_sam: input sam/bam;
