@@ -9,7 +9,7 @@ import sys
 here = path.abspath(path.dirname(__file__))
 
 # load configures
-exec(open("./scsc/config.py").read())
+exec(open("./scsc/app.py").read())
 
 # Get the long description from the relevant file
 with open(path.join(here, "README.md"), encoding='utf-8') as f:

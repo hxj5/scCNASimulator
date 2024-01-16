@@ -7,7 +7,7 @@ import os
 import pysam
 import sys
 
-from .config import APP, VERSION
+from .app import APP, VERSION
 from .blib.region import format_chrom
 
 

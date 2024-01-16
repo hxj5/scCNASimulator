@@ -1,7 +1,7 @@
 # Global Configure
 
 import sys
-from ..config import APP
+from ..app import APP
 
 
 class Config:

@@ -60,9 +60,4 @@ class Config:
 
         if not os.path.exists(self.out_dir):
             os.mkdir(self.out_dir)
-
         
-APP = "scsc"
-VERSION = "0.0.1"
-AUTHOR = "Xianjie Huang"
-

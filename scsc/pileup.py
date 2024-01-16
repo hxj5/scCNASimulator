@@ -14,7 +14,7 @@ import pickle
 import sys
 import time
 
-from .config import APP
+from .app import APP
 from .plp.config import Config, \
     CFG_DEBUG, \
     CFG_CELL_TAG, CFG_UMI_TAG, CFG_UMI_TAG_BC, \
