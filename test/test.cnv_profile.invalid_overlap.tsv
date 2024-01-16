@@ -1,0 +1,9 @@
+clone_0	chr1	1000	28000	1	2
+clone_0	chr1	28001	38000	1	2
+clone_0	chr1	18001	48000	0	1
+clone_0	chr2	320000	560000	0	1
+clone_1	chr2	320000	560000	1	0
+clone_1	chr2	560002	660000	1	0
+clone_1	chr6	18000	68000	2	0
+clone_2	chr18	1	Inf	2	2
+clone_2	chr18	100	1000	2	2
