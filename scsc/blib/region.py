@@ -6,6 +6,24 @@ from intervaltree import IntervalTree
 import numpy as np
 
 
+class RegPos(int):
+
+    # note that ``int`` is immutable, hence __new__() should be used
+    # instead of __init__().
+
+    def __new__(cls, x, *args, **kwargs):
+        if isinstance(x, str):
+            if x.lower().startswith("inf"):
+                x = REG_MAX_POS
+        return super(RegPos, cls).__new__(cls, x)
+
+    def __str__(self):
+        if self >= REG_MAX_POS:
+            return("Inf")
+        else:
+            return(str(self))
+
+
 class Region:
     """Region class
     @param chrom   Chromosome name [str]
@@ -198,8 +216,23 @@ def format_chrom(chrom):
     return chrom[3:] if chrom.lower().startswith("chr") else chrom
 
 
+def format_start(x, base = 1):
+    x = RegPos(x)
+    if x < base:
+        x = base
+    return(x)
+
+
+def format_end(x, base = 1):
+    x = RegPos(x)
+    if x < base:
+        x = base
+    return(x)
+
+
 REG_EXON = 1
 REG_INTRON = 2
+REG_MAX_POS = 0x7fffffff    # same with setting of pysam
 
 
 if __name__ == "__main__":

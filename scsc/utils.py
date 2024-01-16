@@ -8,7 +8,7 @@ import os
 import pysam
 import sys
 
-from .blib.region import format_chrom
+from .blib.region import format_chrom, format_start, format_end
 from .blib.zfile import zopen
 from .cnv import CloneCNVProfile
 
@@ -52,7 +52,7 @@ def load_cnv_profile(fn, sep = "\t", verbose = False):
                 sys.stderr.write("[E::%s] too few columns of line %d.\n" % (func, nl))
             return(None)
         clone_id, chrom, start, end, cn_ale0, cn_ale1 = items[:6]
-        start, end = int(start), int(end)
+        start, end = format_start(start), format_end(end)
         cn_ale0, cn_ale1 = int(cn_ale0), int(cn_ale1)
         dat.add_cnv(chrom, start, end, cn_ale0, cn_ale1, clone_id)
     fp.close()
@@ -87,7 +87,7 @@ def merge_cnv_profile(in_fn, out_fn, max_gap = 1):
             sys.stderr.write("[E::%s] too few columns of line %d.\n" % (func, nl))
             return(None)
         clone_id, chrom, start, end, cn_ale0, cn_ale1 = items[:6]
-        start, end = int(start), int(end)
+        start, end = format_start(start), format_end(end)
         cn_ale0, cn_ale1 = int(cn_ale0), int(cn_ale1)
         if clone_id not in dat:
             dat[clone_id] = {}
