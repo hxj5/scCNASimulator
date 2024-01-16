@@ -143,8 +143,23 @@ def merge_cnv_profile(in_fn, out_fn, max_gap = 1):
     fp.close()
                         
 
-def save_cnv_profile(fn):
-    pass
+def save_cnv_profile(dat, fn, verbose = False):
+    func = "save_cnv_profile"
+    fp = zopen(fn, "wt")
+    if verbose:
+        sys.stderr.write("[I::%s] start to save CNV profile to file '%s' ...\n" % (func, fn))
+    cp = dat.get_all()
+    for i in range(len(cp["chrom"])):
+        s = "\t".join([
+                cp["clone_id"][i],
+                cp["chrom"][i],
+                str(cp["start"][i]),
+                str(cp["end"][i]),
+                str(cp["cn_ale0"][i]),
+                str(cp["cn_ale1"][i])
+            ]) + "\n"
+        fp.write(s)
+    fp.close()
 
 
 def load_cell_anno(fn):

@@ -35,7 +35,7 @@ class CNVProfile:
         ret = self.rs.add(reg)
         return(ret)
 
-    def get_cnv_profile(self, chrom, start, end):
+    def fetch(self, chrom, start, end):
         """Get the CNV profile for the query region.
         @param chrom    Chromosome name [str]
         @param start    1-based start pos, inclusive [int]
@@ -57,6 +57,23 @@ class CNVProfile:
             return((0, (reg.cn_ale0, reg.cn_ale1)))
         else:
             return((1, None))
+
+    def get_all(self):
+        reg_list = self.rs.get_regions(sort = True)
+        dat = {
+                "chrom":[],
+                "start":[],
+                "end":[],
+                "cn_ale0":[],
+                "cn_ale1":[]
+            }
+        for reg in reg_list:
+            dat["chrom"].append(reg.chrom)
+            dat["start"].append(reg.start)
+            dat["end"].append(reg.end - 1)
+            dat["cn_ale0"].append(reg.cn_ale0)
+            dat["cn_ale1"].append(reg.cn_ale1)
+        return(dat)     
         
 
 class CloneCNVProfile:
@@ -70,18 +87,39 @@ class CloneCNVProfile:
         ret = cp.add_cnv(chrom, start, end, cn_ale0, cn_ale1)
         return(ret)
 
-    def get_cnv_profile(self, chrom, start, end, clone_id):
+    def fetch(self, chrom, start, end, clone_id):
         """Get the CNV profile for the query region and cell.
         @param chrom    Chromosome name [str]
         @param start    1-based start pos, inclusive [int]
         @param end      1-based end pos, exclusive [int]
-        @return         see @return of @func CNVProfile::get_cnv_profile
+        @return         see @return of @func CNVProfile::fetch()
                         ret: 11 if clone_id is invalid;
         """
         if clone_id in self.dat:
             cp = self.dat[clone_id]    # cnv profile
-            ret, hits = cp.get_cnv_profile(chrom, start, end)
+            ret, hits = cp.fetch(chrom, start, end)
             return((ret, hits))
         else:
             return((11, None))
+
+    def get_all(self):
+        dat_list = {
+                "clone_id":[],
+                "chrom":[],
+                "start":[],
+                "end":[],
+                "cn_ale0":[],
+                "cn_ale1":[]
+            }
+        for clone_id in sorted(self.dat.keys()):
+            cp = self.dat[clone_id]
+            cp_dat = cp.get_all()
+            n = len(cp_dat["chrom"])
+            dat_list["clone_id"].extend([clone_id] * n)
+            dat_list["chrom"].extend(cp_dat["chrom"])
+            dat_list["start"].extend(cp_dat["start"])
+            dat_list["end"].extend(cp_dat["end"])
+            dat_list["cn_ale0"].extend(cp_dat["cn_ale0"])
+            dat_list["cn_ale1"].extend(cp_dat["cn_ale1"])
+        return(dat_list)
 
