@@ -9,8 +9,8 @@
 # it's probably ok to use pysam to write BGZIP files.
 
 
-import pysam
 import gzip
+import pysam
 
 
 class ZFile:

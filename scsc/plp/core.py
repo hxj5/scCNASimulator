@@ -6,9 +6,9 @@ import pickle
 import pysam
 import sys
 
-from .mcount import MCount
 from ..blib.sam import sam_fetch
 from ..blib.zfile import zopen, ZF_F_GZIP
+from .mcount import MCount
 
 
 def check_read(read, conf):

@@ -15,18 +15,19 @@ import sys
 import time
 
 from .app import APP
-from .plp.config import Config, \
-    CFG_DEBUG, \
-    CFG_CELL_TAG, CFG_UMI_TAG, CFG_UMI_TAG_BC, \
-    CFG_NPROC,     \
-    CFG_MIN_COUNT, CFG_MIN_MAF, \
-    CFG_INCL_FLAG, CFG_EXCL_FLAG_UMI, CFG_EXCL_FLAG_XUMI, \
-    CFG_MIN_LEN, CFG_MIN_MAPQ
-from .plp.core import sp_count
-from .plp.thread import ThreadData
-from .plp.utils import load_region_from_txt, load_snp_from_vcf, \
-    load_snp_from_tsv, merge_mtx, merge_tsv, rewrite_mtx
 from .blib.zfile import zopen, ZF_F_GZIP, ZF_F_PLAIN
+from .plp.config import Config, \
+        CFG_DEBUG, \
+        CFG_CELL_TAG, CFG_UMI_TAG, CFG_UMI_TAG_BC, \
+        CFG_NPROC,     \
+        CFG_MIN_COUNT, CFG_MIN_MAF, \
+        CFG_INCL_FLAG, CFG_EXCL_FLAG_UMI, CFG_EXCL_FLAG_XUMI, \
+        CFG_MIN_LEN, CFG_MIN_MAPQ
+from .plp.core import sp_count
+from .plp.region import load_region_from_txt, load_snp_from_vcf, \
+                        load_snp_from_tsv
+from .plp.thread import ThreadData
+from .plp.utils import merge_mtx, merge_tsv, rewrite_mtx
 
 
 def prepare_config(conf):
