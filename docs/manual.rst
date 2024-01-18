@@ -79,11 +79,8 @@ The corresponding phased genotype could be delimited by either ``'/'`` or
 Clone-specific CNV profile
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 The clone-specific CNV profile should be stored in a TSV file
-with the first 6 columns being ``clone_id``, ``chrom``, ``start``, ``end``,
-``cn_ale0``, ``cn_ale1``, where
-
-clone_id : str
-    The clone ID.
+with the first 7 columns being ``chrom``, ``start``, ``end``, ``region_id``,
+``clone_id``, ``cn_ale0``, ``cn_ale1``, where
 
 chrom : str
     The chromosome name, e.g., chr1.
@@ -95,6 +92,13 @@ end : int
     The end genomic position of the CNV region, 1-based and inclusive.
     To specify the end of the whole chromosome, you can use either the actual
     genomic position or simply ``Inf``.
+
+region_id : str
+    The ID of the CNV region, can be arbitrary string as long as it is unique
+    in each clone.
+
+clone_id : str
+    The clone ID.
 
 cn_ale0 : int
     The copy number of the first allele (haplotype).
@@ -109,12 +113,12 @@ An example is as follows:
 
 .. code-block::
 
-   clone_0      chr1    1000    28000   1       2
-   clone_0      chr2    320000  560000  0       1
-   clone_1      chr2    320000  560000  1       0
-   clone_1      chr6    18000   68000   2       0
-   clone_2      chr18   1       Inf     2       2
-
+   chr1   1000    28000   chr1:1000-28000     clone_0   1    2
+   chr1   28001   69000   chr1:28001-69000    clone_0   2    1
+   chr2   320000  560000  chr2:320000-560000  clone_0   0    1
+   chr2   320000  560000  chr2:320000-560000  clone_1   1    0
+   chr6   18000   68000   chr6:18000-68000    clone_1   2    0
+   chr18  1       Inf     chr18               clone_2   2    2
 
 By specifying different values for ``cn_ale0`` and ``cn_ale1``, you may
 mimic various CNV types, including copy gain (e.g., setting ``1, 2``), 

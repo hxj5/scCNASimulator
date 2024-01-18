@@ -230,6 +230,18 @@ def format_end(x, base = 1):
     return(x)
 
 
+def reg2str(chrom, start, end, base = 1):
+    chrom = format_chrom(chrom)
+    start = format_start(start)
+    end = format_end(end)
+    s = None
+    if end >= REG_MAX_POS:
+        s = "%s:%s-" % (chrom, start)
+    else:
+        s = "%s:%s-%s" % (chrom, start, end)
+    return(s)
+
+
 REG_EXON = 1
 REG_INTRON = 2
 REG_MAX_POS = 0x7fffffff    # same with setting of pysam

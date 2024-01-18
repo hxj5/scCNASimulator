@@ -6,7 +6,7 @@ import sys
 from sys import stdout, stderr
 
 from ..blib.region import format_chrom, format_start, format_end  \
-                    Region, RegionSet 
+                    Region, RegionSet, reg2str
 from ..blib.zfile import zopen
 
 
@@ -15,11 +15,13 @@ class CNVRegCN(Region):
     @param chrom    Chromosome name [str]
     @param start    1-based start pos, inclusive [int]
     @param end      1-based end pos, exclusive [int]
+    @param name     The ID of the region [str]
     @param cn_ale0  Copy Number of the first allele [int]
     @param cn_ale1  Copy Number of the second allele [int]
     """
-    def __init__(self, chrom, start, end, cn_ale0, cn_ale1):
+    def __init__(self, chrom, start, end, name, cn_ale0, cn_ale1):
         super().__init__(self, chrom, start, end)
+        self.name = name
         self.cn_ale0 = cn_ale0
         self.cn_ale1 = cn_ale1
 
@@ -28,16 +30,17 @@ class CNVProfile:
     def __init__(self):
         self.rs = RegionSet()
 
-    def add_cnv(self, chrom, start, end, cn_ale0, cn_ale1):
+    def add_cnv(self, chrom, start, end, name, cn_ale0, cn_ale1):
         """Add a new CNV profile.
         @param chrom    Chromosome name [str]
         @param start    1-based start pos, inclusive [int]
         @param end      1-based end pos, exclusive [int]
+        @param name     The ID of the region [str]
         @param cn_ale0  Copy Number of the first allele [int]
         @param cn_ale1  Copy Number of the second allele [int]
         @return         0 success, 1 discarded as duplicate, -1 error [int]
         """
-        reg = CNVRegCN(chrom, start, end, cn_ale0, cn_ale1)
+        reg = CNVRegCN(chrom, start, end, name, cn_ale0, cn_ale1)
         ret = self.rs.add(reg)
         return(ret)
 
@@ -70,6 +73,7 @@ class CNVProfile:
                 "chrom":[],
                 "start":[],
                 "end":[],
+                "name":[],
                 "cn_ale0":[],
                 "cn_ale1":[]
             }
@@ -77,27 +81,43 @@ class CNVProfile:
             dat["chrom"].append(reg.chrom)
             dat["start"].append(reg.start)
             dat["end"].append(reg.end - 1)
+            dat["name"].append(reg.name)
             dat["cn_ale0"].append(reg.cn_ale0)
             dat["cn_ale1"].append(reg.cn_ale1)
         return(dat)     
         
+    def query(self, name):
+        "Query CNV profile for the given region and clone.
+        @param name       The ID of the CNV region [str]
+        @param clone_id   The ID of the CNV clone [str]
+        @return           see @return of @func CNVProfile::fetch()
+        """
+        hits = self.rs.query(name)
+        if not hits:
+            return((1, None))
+        elif len(hits) == 1:
+            reg = hits[0]
+            return((0, (reg.cn_ale0, reg.cn_ale1)))
+        else:
+            return((1, None))
 
 class CloneCNVProfile:
     def __init__(self):
         self.dat = {}
 
-    def add_cnv(self, chrom, start, end, cn_ale0, cn_ale1, clone_id):
+    def add_cnv(self, chrom, start, end, name, cn_ale0, cn_ale1, clone_id):
         if clone_id not in self.dat:
             self.dat[clone_id] = CNVProfile()
         cp = self.dat[clone_id]
-        ret = cp.add_cnv(chrom, start, end, cn_ale0, cn_ale1)
+        ret = cp.add_cnv(chrom, start, end, name, cn_ale0, cn_ale1)
         return(ret)
 
     def fetch(self, chrom, start, end, clone_id):
         """Get the CNV profile for the query region and cell.
-        @param chrom    Chromosome name [str]
-        @param start    1-based start pos, inclusive [int]
-        @param end      1-based end pos, exclusive [int]
+        @param chrom      Chromosome name [str]
+        @param start      1-based start pos, inclusive [int]
+        @param end        1-based end pos, exclusive [int]
+        @param clone_id   The ID of the CNV clone [str]
         @return         see @return of @func CNVProfile::fetch()
                         ret: 11 if clone_id is invalid;
         """
@@ -114,6 +134,7 @@ class CloneCNVProfile:
                 "chrom":[],
                 "start":[],
                 "end":[],
+                "name":[],
                 "cn_ale0":[],
                 "cn_ale1":[]
             }
@@ -125,9 +146,23 @@ class CloneCNVProfile:
             dat_list["chrom"].extend(cp_dat["chrom"])
             dat_list["start"].extend(cp_dat["start"])
             dat_list["end"].extend(cp_dat["end"])
+            dat_list["name"].extend(cp_dat["name"])
             dat_list["cn_ale0"].extend(cp_dat["cn_ale0"])
             dat_list["cn_ale1"].extend(cp_dat["cn_ale1"])
         return(dat_list)
+
+    def query(self, name, clone_id):
+        "Query CNV profile for the given region and clone.
+        @param name       The ID of the CNV region [str]
+        @param clone_id   The ID of the CNV clone [str]
+        @return         see @return of @func CNVProfile::fetch()
+        """
+        if clone_id in self.dat:
+            cp = self.dat[clone_id]    # cnv profile
+            ret, hits = cp.fetch(chrom, start, end)
+            return((ret, hits))
+        else:
+            return((11, None))
 
 
 def load_cnv_profile(fn, sep = "\t", verbose = False):
@@ -135,8 +170,9 @@ def load_cnv_profile(fn, sep = "\t", verbose = False):
     @param fn       Path to file [str]
     @param verbose  If print detailed log info [bool]
     @return         A CloneCNVProfile object if success, None otherwise.
-    @note           The first 6 columns of the file should be
-                    clone_id, chrom, start, end (both 1-based, inclusive), cn_ale0, cn_ale1.
+    @note           The first 7 columns of the file should be
+                    chrom, start, end (both 1-based, inclusive), region_id,
+                    clone_id, cn_ale0, cn_ale1.
     """
     func = "load_cnv_profile"
     fp = zopen(fn, "rt")
@@ -147,14 +183,14 @@ def load_cnv_profile(fn, sep = "\t", verbose = False):
     for line in fp:
         nl += 1
         items = line.strip().split(sep)
-        if len(items) < 6:
+        if len(items) < 7:
             if verbose:
                 stderr.write("[E::%s] too few columns of line %d.\n" % (func, nl))
             return(None)
-        clone_id, chrom, start, end, cn_ale0, cn_ale1 = items[:6]
+        chrom, start, end, region_id, clone_id, cn_ale0, cn_ale1 = items[:7]
         start, end = format_start(start), format_end(end)
         cn_ale0, cn_ale1 = int(cn_ale0), int(cn_ale1)
-        dat.add_cnv(chrom, start, end, cn_ale0, cn_ale1, clone_id)
+        dat.add_cnv(chrom, start, end, region_id, cn_ale0, cn_ale1, clone_id)
     fp.close()
     return(dat)
 
@@ -194,10 +230,10 @@ def merge_cnv_profile(in_fn, out_fn, max_gap = 1):
     for line in fp:
         nl += 1
         items = line.strip().split(sep)
-        if len(items) < 6:
+        if len(items) < 7:
             stderr.write("[E::%s] too few columns of line %d.\n" % (func, nl))
             return(None)
-        clone_id, chrom, start, end, cn_ale0, cn_ale1 = items[:6]
+        chrom, start, end, region_id, clone_id, cn_ale0, cn_ale1 = items[:7]
         start, end = format_start(start), format_end(end)
         cn_ale0, cn_ale1 = int(cn_ale0), int(cn_ale1)
         if clone_id not in dat:
@@ -250,7 +286,9 @@ def merge_cnv_profile(in_fn, out_fn, max_gap = 1):
         for chrom in sorted(cl_dat.keys()):
             ch_dat = cl_dat[chrom]
             for s, e, cn_ale0, cn_ale1 in ch_dat:
-                fp.write("\t".join([clone_id, chrom, str(s), str(e), str(cn_ale0), str(cn_ale1)]) + "\n")
+                region_id = reg2str(chrom, s, e)
+                fp.write("\t".join([chrom, str(s), str(e), region_id, \
+                    clone_id, str(cn_ale0), str(cn_ale1)]) + "\n")
     fp.close()
                         
 
@@ -268,10 +306,11 @@ def save_cnv_profile(dat, fn, verbose = False):
     cp = dat.get_all()
     for i in range(len(cp["chrom"])):
         s = "\t".join([
-                cp["clone_id"][i],
                 cp["chrom"][i],
                 str(cp["start"][i]),
                 str(cp["end"][i]),
+                cp["name"][i],
+                cp["clone_id"][i],
                 str(cp["cn_ale0"][i]),
                 str(cp["cn_ale1"][i])
             ]) + "\n"

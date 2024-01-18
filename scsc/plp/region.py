@@ -177,7 +177,7 @@ class BlockRegion(Region):
     @param snp_list A list of SNPs located within the block [list of SNP objects]
     """
     def __init__(self, chrom, start, end, name = None, snp_list = None):
-        super().__init__(chrom, start, end)
+        super().__init__(chrom, start, end, name)
         self.name = name
         self.snp_list = snp_list
 
