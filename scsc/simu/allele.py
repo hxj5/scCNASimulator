@@ -50,8 +50,10 @@ class AlleleUMI:
         """Query the allele index
         @param cell     The cell barcode [str]
         @param umi      The UMI [str]
-        @return         The allele index if there is matched cell and UMI,
-                        otherwise, None [int]
+        @return         A tuple of two elements if there is matched cell and UMI,
+                          allele: allele index, one of {0, 1};
+                          A list of region IDs.
+                        Otherwise, None.
         """
         if cell not in self.dat:
             return(None)
@@ -61,7 +63,7 @@ class AlleleUMI:
         if state == 0:
             assert len(ale_dat) == 1
             allele = ale_dat.keys()[0]
-            return(allele)
+            return((allele, list(ale_dat[allele])))
         else:
             return(None)
         

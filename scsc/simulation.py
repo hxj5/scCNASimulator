@@ -38,6 +38,15 @@ def prepare_args(conf):
     assert_n(conf.umi_tag)
 
 
+def __write_read(read, sam, umi, umi_tag):
+    read.query_name += "_0"
+    if not umi:
+        sam.write(read)
+    umi += "AAAA"
+    read.set_tag(umi_tag, umi)
+    sam.write(read)
+
+
 def simu_cnv(
     in_sam, out_sam,
     cell_anno, cnv_profile, allele_umi,
@@ -45,62 +54,64 @@ def simu_cnv(
 ):
     func = "simu_cnv"
 
-    n_umi_c0_a0 = n_umi_c0_a1 = n_umi_c0_amb = 0
-    n_umi_c1_a0 = n_umi_c1_a1 = n_umi_c1_amb = 0
-    umi_del = {}
-
     clone = None
+    flag = -1
     for read in in_sam.fetch():
-        if not read.has_tag(cell_tag):
-            out_sam.write(read)
-            continue
-        cell = read.get_tag(cell_tag)
-
         if not read.has_tag(umi_tag):
-            out_sam.write(read)
+            __write_read(read, out_sam, umi, umi_tag)
             continue
         umi = read.get_tag(umi_tag)
 
+        if not read.has_tag(cell_tag):
+            __write_read(read, out_sam, umi, umi_tag)
+            continue
+        cell = read.get_tag(cell_tag)
+
         if cell not in cell_anno:    # cell not in CNV clone.
-            out_sam.write(read)
+            __write_read(read, out_sam, umi, umi_tag)
             continue
         clone = cell_anno[cell]
 
+        # check whether read is in CNV region
+        # even if it is ambiguous UMI, for copy gain and copy loss, it
+        # may still be forked or deleted.
+        
         chrom = read.reference_name
         if not chrom:
-            out_sam.write(read)
+            __write_read(read, out_sam, umi, umi_tag)
             continue
-        positions = read.get_reference_positions()   # 0-based
+        positions = read.get_reference_positions()        # 0-based
         if not positions:
-            out_sam.write(read)
+            __write_read(read, out_sam, umi, umi_tag)
             continue
         start, end = positions[0] + 1, positions[-1] + 2
-        ret, cn_profile = cnv_profile.fetch(chrom, start, end, clone)
-        if cn_profile is None:
-            out_sam.write(read)
-            continue
 
-        allele = allele_umi.query(cell, umi)
-        if allele is None:       # ambiguous UMI without allele information
-            out_sam.write(read)
+        ###
+        res = allele_umi.query(cell, umi)
+        if res is None:              # ambiguous UMIs
+            __write_read(read, out_sam, umi, umi_tag)
             continue
+        allele, reg_id_list = res[:2]
+        if len(reg_id_set) != 1:
+            flag = 2
+        reg_id = reg_id_list[0]
 
-        cell_umi = ale_umi[cb]
-        if umi in cell_umi[0]:    # UMI is on allele 0.
-            if clone_id == 0:
-                n_umi_c0_a0 += 1
-                umi_del[cb]["a0"].add(umi)
-            else:
-                n_umi_c1_a0 += 1
-                out_sam.write(read)
-        elif umi in cell_umi[1]:
-            if clone_id == 0:
-                n_umi_c0_a1 += 1
-                out_sam.write(read)
-            else:
-                n_umi_c1_a1 += 1
-                umi_del[cb]["a1"].add(umi)
-        else:                     # ambiguous UMI
+
+        ret, cn_ale = cnv_profile.query(reg_id, clone)
+        if ret < 0:
+            raise ValueError
+        if ret != 0:
+            flag = 3
+        cn = cn_ale[allele]     # copy number
+
+        if cn == 0:
+            continue
+        elif cn == 1:
+            __write_read(read, out_sam, umi, umi_tag)
+            continue
+        else:
+            
+
             rand_f = np.random.rand()
             if clone_id == 0:
                 n_umi_c0_amb += 1
