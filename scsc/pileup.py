@@ -181,60 +181,11 @@ def show_progress(rv = None):
     return(rv)
 
 
-def pileup(argv):
-    """Core part
-    @param argv   A list of cmdline parameters [list]
-    @return       0 if success, -1 otherwise [int]
-    """
-    func = "main"
+def pileup_core(argv, conf):
+    func = "pileup_core"
     ret = -1
 
-    if len(argv) <= 2:
-        usage(sys.stderr)
-        sys.exit(1)
-
     start_time = time.time()
-
-    conf = Config()
-    opts, args = getopt.getopt(argv[2:], "-s:-O:-R:-P:-b:-h-D:-p:", [
-                     "sam=", 
-                     "outdir=", 
-                     "region=", "phasedSNP=" "barcode=",
-                     "help", "debug=",
-                     "nproc=", 
-                     "cellTAG=", "UMItag=", 
-                     "minCOUNT=", "minMAF=", "outputAllReg", "countDupHap",
-                     "inclFLAG=", "exclFLAG=", "minLEN=", "minMAPQ=", "countORPHAN"
-                ])
-
-    for op, val in opts:
-        if len(op) > 2:
-            op = op.lower()
-        if op in   ("-s", "--sam"): conf.sam_fn = val
-        elif op in ("-O", "--outdir"): conf.out_dir = val
-        elif op in ("-R", "--region"): conf.region_fn = val
-        elif op in ("-P", "--phasedsnp"): conf.snp_fn = val
-        elif op in ("-b", "--barcode"): conf.barcode_fn = val
-        elif op in ("-h", "--help"): usage(sys.stderr); sys.exit(1)
-        elif op in ("-D", "--debug"): conf.debug = int(val)
-
-        elif op in ("-p", "--proc"): conf.nproc = int(val)
-        elif op in ("--celltag"): conf.cell_tag = val
-        elif op in ("--umitag"): conf.umi_tag = val
-        elif op in ("--mincount"): conf.min_count = int(val)
-        elif op in ("--minmaf"): conf.min_maf = float(val)
-        elif op in ("--outputallreg"): conf.output_all_reg = True
-        elif op in ("--countduphap"): conf.no_dup_hap = False
-
-        elif op in ("--inclflag"): conf.incl_flag = int(val)
-        elif op in ("--exclflag"): conf.excl_flag = int(val)
-        elif op in ("--minlen"): conf.min_len = int(val)
-        elif op in ("--minmapq"): conf.min_mapq = float(val)
-        elif op in ("--countorphan"): conf.no_orphan = False
-
-        else:
-            sys.stderr.write("[E::%s] invalid option: '%s'.\n" % (func, op))
-            return(-1)
 
     try:
         time_str = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(start_time))
@@ -423,13 +374,65 @@ def pileup(argv):
     return(ret)
 
 
-def run():
-    pileup(sys.argv)
+def pileup_main(argv):
+    """Command-Line interface.
+    @param argv   A list of cmdline parameters [list]
+    @return       0 if success, -1 otherwise [int]
+    """
+    func = "pileup_main"
+
+    if len(argv) <= 2:
+        usage(sys.stderr)
+        sys.exit(1)
+
+    conf = Config()
+    opts, args = getopt.getopt(argv[2:], "-s:-O:-R:-P:-b:-h-D:-p:", [
+                     "sam=", 
+                     "outdir=", 
+                     "region=", "phasedSNP=" "barcode=",
+                     "help", "debug=",
+                     "nproc=", 
+                     "cellTAG=", "UMItag=", 
+                     "minCOUNT=", "minMAF=", "outputAllReg", "countDupHap",
+                     "inclFLAG=", "exclFLAG=", "minLEN=", "minMAPQ=", "countORPHAN"
+                ])
+
+    for op, val in opts:
+        if len(op) > 2:
+            op = op.lower()
+        if op in   ("-s", "--sam"): conf.sam_fn = val
+        elif op in ("-O", "--outdir"): conf.out_dir = val
+        elif op in ("-R", "--region"): conf.region_fn = val
+        elif op in ("-P", "--phasedsnp"): conf.snp_fn = val
+        elif op in ("-b", "--barcode"): conf.barcode_fn = val
+        elif op in ("-h", "--help"): usage(sys.stderr); sys.exit(1)
+        elif op in ("-D", "--debug"): conf.debug = int(val)
+
+        elif op in ("-p", "--proc"): conf.nproc = int(val)
+        elif op in ("--celltag"): conf.cell_tag = val
+        elif op in ("--umitag"): conf.umi_tag = val
+        elif op in ("--mincount"): conf.min_count = int(val)
+        elif op in ("--minmaf"): conf.min_maf = float(val)
+        elif op in ("--outputallreg"): conf.output_all_reg = True
+        elif op in ("--countduphap"): conf.no_dup_hap = False
+
+        elif op in ("--inclflag"): conf.incl_flag = int(val)
+        elif op in ("--exclflag"): conf.excl_flag = int(val)
+        elif op in ("--minlen"): conf.min_len = int(val)
+        elif op in ("--minmapq"): conf.min_mapq = float(val)
+        elif op in ("--countorphan"): conf.no_orphan = False
+
+        else:
+            sys.stderr.write("[E::%s] invalid option: '%s'.\n" % (func, op))
+            return(-1)
+
+    ret = pileup_core(argv, conf)
+    return(ret)
 
 
 COMMAND = "pileup"
 
 
 if __name__ == "__main__":
-    run()
+    pileup_main(sys.argv)
 
