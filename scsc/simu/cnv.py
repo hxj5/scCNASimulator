@@ -4,9 +4,9 @@
 import functools
 import sys
 
-from .blib.region import format_chrom, format_start, format_end  \
+from ..blib.region import format_chrom, format_start, format_end  \
                     Region, RegionSet 
-from .blib.zfile import zopen
+from ..blib.zfile import zopen
 
 
 class CNVRegCN(Region):
