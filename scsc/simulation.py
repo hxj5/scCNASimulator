@@ -13,8 +13,7 @@ from .blib.region import format_chrom
 from .simu.allele import load_allele_umi
 from .simu.cnv import load_cnv_profile, merge_cnv_profile
 from .simu.config import Config
-from .simu.utils import load_cell_anno   \
-                    assert_e, assert_n
+from .simu.utils import load_cell_anno, assert_e, assert_n
 
 
 def prepare_args(conf):
