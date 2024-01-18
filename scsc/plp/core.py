@@ -5,6 +5,7 @@ import os
 import pickle
 import pysam
 import sys
+from sys import stdout, stderr
 
 from ..blib.sam import sam_fetch
 from ..blib.zfile import zopen, ZF_F_GZIP
@@ -111,7 +112,7 @@ def sp_count(thdata):
     fp_dp = zopen(thdata.out_dp_fn, "wt", ZF_F_GZIP, is_bytes = False)
     fp_oth = zopen(thdata.out_oth_fn, "wt", ZF_F_GZIP, is_bytes = False)
 
-    out_umi_fn = os.path.join(conf.umi_dir, "gene_umi_%d.tsv" % thdata.idx)
+    out_umi_fn = os.path.join(conf.umi_dir, "allele_umi_%d.tsv" % thdata.idx)
     fp_umi = open(out_umi_fn, "w")
 
     m_reg = float(len(reg_list))
@@ -120,7 +121,7 @@ def sp_count(thdata):
     k_reg = 1
     for reg_idx, reg in enumerate(reg_list):
         if conf.debug > 0:
-            sys.stderr.write("[D::%s][Thread-%d] processing region '%s' ...\n" %
+            stderr.write("[D::%s][Thread-%d] processing region '%s' ...\n" %
                               (func, thdata.idx, reg.name))
 
         if reg.snp_list:
@@ -138,7 +139,7 @@ def sp_count(thdata):
                                 func, thdata.idx, reg.name, smp)
                         msg += "\tduplicate UMIs: REF, ALT, DP_uniq (%d, %d, %d)!\n" % (
                                 reg_ref_cnt[smp], reg_alt_cnt[smp], reg_dp_cnt[smp])
-                        sys.stderr.write(msg)
+                        stderr.write(msg)
                     if conf.no_dup_hap:
                         nu_share = reg_ref_cnt[smp] + reg_alt_cnt[smp] - reg_dp_cnt[smp]
                         nu_ad = reg_alt_cnt[smp] - nu_share
@@ -195,7 +196,7 @@ def sp_count(thdata):
         n_reg += 1
         frac_reg = n_reg / m_reg
         if frac_reg - l_reg >= 0.02 or n_reg == m_reg:
-            sys.stdout.write("[I::%s][Thread-%d] %d%% genes processed\n" % 
+            stdout.write("[I::%s][Thread-%d] %d%% genes processed\n" % 
                 (func, thdata.idx, math.floor(frac_reg * 100)))
             l_reg = frac_reg
 

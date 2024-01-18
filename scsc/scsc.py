@@ -6,6 +6,7 @@ import numpy as np
 import os
 import pysam
 import sys
+from sys import stdout, stderr
 
 from .app import APP, VERSION
 from .blib.region import format_chrom
@@ -118,7 +119,7 @@ def simu_core(in_sam, out_sam,
     return (n_umi_del)
 
 
-def usage(fp = sys.stderr):
+def usage(fp = stderr):
     s =  "\n" 
     s += "Version: %s\n" % (VERSION, )
     s += "Usage: %s <options>\n" % (APP, )  
@@ -149,7 +150,7 @@ def main():
     func = "main"
 
     if len(sys.argv) <= 1:
-        usage(sys.stderr)
+        usage(stderr)
         sys.exit(1)
 
     conf = Config()
@@ -183,10 +184,10 @@ def main():
         elif op in ("--seed"): conf.seed = int(val)
         elif op in ("--geneanno"): conf.gene_anno_fn = val
         elif op in ("--outdir"): conf.out_dir = val
-        elif op in ("--version"): sys.stderr.write("%s\n" % VERSION); sys.exit(1)
+        elif op in ("--version"): stderr.write("%s\n" % VERSION); sys.exit(1)
         elif op in ("--help"): usage(); sys.exit(1)
         else:
-            sys.stderr.write("[E::%s] invalid option: '%s'.\n" % (func, op))
+            stderr.write("[E::%s] invalid option: '%s'.\n" % (func, op))
             return(-1)    
 
     conf.check_args()

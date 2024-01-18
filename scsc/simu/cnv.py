@@ -3,6 +3,7 @@
 
 import functools
 import sys
+from sys import stdout, stderr
 
 from ..blib.region import format_chrom, format_start, format_end  \
                     Region, RegionSet 
@@ -142,13 +143,13 @@ def load_cnv_profile(fn, sep = "\t", verbose = False):
     dat = CloneCNVProfile()
     nl = 0
     if verbose:
-        sys.stderr.write("[I::%s] start to load CNV profile from file '%s' ...\n" % (func, fn))
+        stderr.write("[I::%s] start to load CNV profile from file '%s' ...\n" % (func, fn))
     for line in fp:
         nl += 1
         items = line.strip().split(sep)
         if len(items) < 6:
             if verbose:
-                sys.stderr.write("[E::%s] too few columns of line %d.\n" % (func, nl))
+                stderr.write("[E::%s] too few columns of line %d.\n" % (func, nl))
             return(None)
         clone_id, chrom, start, end, cn_ale0, cn_ale1 = items[:6]
         start, end = format_start(start), format_end(end)
@@ -189,12 +190,12 @@ def merge_cnv_profile(in_fn, out_fn, max_gap = 1):
     dat = {}
     nl = 0
     if verbose:
-        sys.stderr.write("[I::%s] start to merge CNV profile from file '%s' ...\n" % (func, in_fn))
+        stderr.write("[I::%s] start to merge CNV profile from file '%s' ...\n" % (func, in_fn))
     for line in fp:
         nl += 1
         items = line.strip().split(sep)
         if len(items) < 6:
-            sys.stderr.write("[E::%s] too few columns of line %d.\n" % (func, nl))
+            stderr.write("[E::%s] too few columns of line %d.\n" % (func, nl))
             return(None)
         clone_id, chrom, start, end, cn_ale0, cn_ale1 = items[:6]
         start, end = format_start(start), format_end(end)
@@ -237,7 +238,7 @@ def merge_cnv_profile(in_fn, out_fn, max_gap = 1):
             for iv in in iv_list[1:]:
                 s2, e2 = iv[:2]
                 if s2 <= e1:    # overlap adjacent region
-                    sys.stderr.write("[E::%s] distinct CNV profiles '%s', (%d, %d) and (%d, %d).\n" % 
+                    stderr.write("[E::%s] distinct CNV profiles '%s', (%d, %d) and (%d, %d).\n" % 
                         (func, chrom, s1, e1, s2, e2))
                 return(None)
             cl_dat[chrom] = iv_list
@@ -263,7 +264,7 @@ def save_cnv_profile(dat, fn, verbose = False):
     func = "save_cnv_profile"
     fp = zopen(fn, "wt")
     if verbose:
-        sys.stderr.write("[I::%s] start to save CNV profile to file '%s' ...\n" % (func, fn))
+        stderr.write("[I::%s] start to save CNV profile to file '%s' ...\n" % (func, fn))
     cp = dat.get_all()
     for i in range(len(cp["chrom"])):
         s = "\t".join([

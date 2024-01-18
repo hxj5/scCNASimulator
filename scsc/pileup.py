@@ -12,6 +12,7 @@ import multiprocessing
 import os
 import pickle
 import sys
+from sys import stdout, stderr
 import time
 
 from .app import APP
@@ -39,10 +40,10 @@ def prepare_config(conf):
     func = "prepare_config"
     if conf.sam_fn:
         if not os.path.isfile(conf.sam_fn):
-            sys.stderr.write("[E::%s] sam file does not exist '%s'.\n" % (func, conf.sam_fn))
+            stderr.write("[E::%s] sam file does not exist '%s'.\n" % (func, conf.sam_fn))
             return(-1)
     else:
-        sys.stderr.write("[E::%s] sam file(s) needed!\n" % (func,))
+        stderr.write("[E::%s] sam file(s) needed!\n" % (func,))
         return(-1)
 
     if conf.barcode_fn:
@@ -50,18 +51,18 @@ def prepare_config(conf):
             with zopen(conf.barcode_fn, "rt") as fp:
                 conf.barcodes = sorted([x.strip() for x in fp])
             if len(set(conf.barcodes)) != len(conf.barcodes):
-                sys.stderr.write("[E::%s] duplicate barcodes!\n" % (func, ))
+                stderr.write("[E::%s] duplicate barcodes!\n" % (func, ))
                 return(-1)
         else:
-            sys.stderr.write("[E::%s] barcode file does not exist '%s'.\n" % (func, conf.barcode_fn))
+            stderr.write("[E::%s] barcode file does not exist '%s'.\n" % (func, conf.barcode_fn))
             return(-1)
     else:       
         conf.barcodes = None
-        sys.stderr.write("[E::%s] barcode file needed!\n" % (func,))
+        stderr.write("[E::%s] barcode file needed!\n" % (func,))
         return(-1)
 
     if not conf.out_dir:
-        sys.stderr.write("[E::%s] out dir needed!\n" % func)
+        stderr.write("[E::%s] out dir needed!\n" % func)
         return(-1)
     if not os.path.isdir(conf.out_dir):
         os.mkdir(conf.out_dir)
@@ -75,15 +76,15 @@ def prepare_config(conf):
         if os.path.isfile(conf.region_fn): 
             conf.reg_list = load_region_from_txt(conf.region_fn, verbose = True)
             if not conf.reg_list:
-                sys.stderr.write("[E::%s] failed to load region file.\n" % func)
+                stderr.write("[E::%s] failed to load region file.\n" % func)
                 return(-1)
-            sys.stdout.write("[I::%s] count %d regions in %d single cells.\n" % (func, 
+            stdout.write("[I::%s] count %d regions in %d single cells.\n" % (func, 
                 len(conf.reg_list), len(conf.barcodes)))
         else:
-            sys.stderr.write("[E::%s] region file does not exist '%s'.\n" % (func, conf.region_fn))
+            stderr.write("[E::%s] region file does not exist '%s'.\n" % (func, conf.region_fn))
             return(-1)
     else:
-        sys.stderr.write("[E::%s] region file needed!\n" % (func,))
+        stderr.write("[E::%s] region file needed!\n" % (func,))
         return(-1)
 
     if conf.snp_fn:
@@ -94,16 +95,16 @@ def prepare_config(conf):
             else:
                 conf.snp_set = load_snp_from_tsv(conf.snp_fn, verbose = True)
             if not conf.snp_set or conf.snp_set.get_n() <= 0:
-                sys.stderr.write("[E::%s] failed to load snp file.\n" % func)
+                stderr.write("[E::%s] failed to load snp file.\n" % func)
                 return(-1)
             else:
-                sys.stdout.write("[I::%s] %d SNPs loaded.\n" % (func,
+                stdout.write("[I::%s] %d SNPs loaded.\n" % (func,
                     conf.snp_set.get_n()))           
         else:
-            sys.stderr.write("[E::%s] snp file does not exist '%s'.\n" % (func, conf.snp_fn))
+            stderr.write("[E::%s] snp file does not exist '%s'.\n" % (func, conf.snp_fn))
             return(-1)      
     else:
-        sys.stderr.write("[E::%s] SNP file needed!\n" % (func,))
+        stderr.write("[E::%s] SNP file needed!\n" % (func,))
         return(-1)
 
     if conf.cell_tag and conf.cell_tag.upper() == "NONE":
@@ -111,10 +112,10 @@ def prepare_config(conf):
     if conf.cell_tag and conf.barcodes:
         pass       
     elif (not conf.cell_tag) ^ (not conf.barcodes):
-        sys.stderr.write("[E::%s] should not specify cell_tag or barcodes alone.\n" % (func, ))
+        stderr.write("[E::%s] should not specify cell_tag or barcodes alone.\n" % (func, ))
         return(-1)
     else:
-        sys.stderr.write("[E::%s] should specify cell_tag and barcodes.\n" % (func, ))
+        stderr.write("[E::%s] should specify cell_tag and barcodes.\n" % (func, ))
         return(-1)        
 
     if conf.umi_tag:
@@ -126,7 +127,7 @@ def prepare_config(conf):
         elif conf.umi_tag.upper() == "NONE":
             conf.umi_tag = None
     else:
-        sys.stderr.write("[E::%s] umi tag needed!\n" % (func, ))
+        stderr.write("[E::%s] umi tag needed!\n" % (func, ))
         return(-1)
 
     if conf.barcodes:
@@ -142,7 +143,7 @@ def prepare_config(conf):
     return(0)
 
 
-def usage(fp = sys.stderr):
+def usage(fp = stderr):
     s =  "\n" 
     s += "Usage: %s %s <options>\n" % (APP, COMMAND)  
     s += "\n" 
@@ -189,15 +190,15 @@ def pileup_core(argv, conf):
 
     try:
         time_str = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(start_time))
-        sys.stdout.write("[I::%s] start time: %s.\n" % (func, time_str))
+        stdout.write("[I::%s] start time: %s.\n" % (func, time_str))
 
         cmdline = " ".join(argv)
-        sys.stdout.write("[I::%s] CMD: %s\n" % (func, cmdline))
+        stdout.write("[I::%s] CMD: %s\n" % (func, cmdline))
 
         if prepare_config(conf) < 0:
             raise ValueError("[%s] errcode %d" % (func, -2))
-        sys.stderr.write("[I::%s] program configuration:\n" % func)
-        conf.show(fp = sys.stderr, prefix = "\t")
+        stderr.write("[I::%s] program configuration:\n" % func)
+        conf.show(fp = stderr, prefix = "\t")
 
         conf.umi_dir = os.path.join(conf.out_dir, "umi")
         if not os.path.exists(conf.umi_dir):
@@ -205,7 +206,7 @@ def pileup_core(argv, conf):
 
         # extract SNPs for each region
         if conf.debug > 0:
-            sys.stderr.write("[D::%s] extract SNPs for each region.\n" % (func,))
+            stderr.write("[D::%s] extract SNPs for each region.\n" % (func,))
         reg_list = []
         for reg in conf.reg_list:
             snp_list = conf.snp_set.fetch(reg.chrom, reg.start, reg.end)
@@ -214,9 +215,9 @@ def pileup_core(argv, conf):
                 reg_list.append(reg)
             else:
                 if conf.debug > 0:
-                    sys.stderr.write("[D::%s] no SNP fetched for region '%s'.\n" % 
+                    stderr.write("[D::%s] no SNP fetched for region '%s'.\n" % 
                         (func, reg.name))
-        sys.stdout.write("[I::%s] %d regions extracted with SNPs.\n" % 
+        stdout.write("[I::%s] %d regions extracted with SNPs.\n" % 
             (func, len(reg_list)))
 
         if not conf.output_all_reg:
@@ -262,8 +263,8 @@ def pileup_core(argv, conf):
             )
             thdata_list.append(thdata)
             if conf.debug > 0:
-                sys.stderr.write("[D::%s] data of thread-%d before sp_count:\n" % (func, 0))
-                thdata.show(fp = sys.stderr, prefix = "\t")
+                stderr.write("[D::%s] data of thread-%d before sp_count:\n" % (func, 0))
+                thdata.show(fp = stderr, prefix = "\t")
             ret_sp, thdata = sp_count(thdata)
         else:
             pool = multiprocessing.Pool(processes = m_thread)
@@ -280,8 +281,8 @@ def pileup_core(argv, conf):
                 )
                 thdata_list.append(thdata)
                 if conf.debug > 0:
-                    sys.stderr.write("[D::%s] data of thread-%d before sp_count:\n" % (func, i))
-                    thdata.show(fp = sys.stderr, prefix = "\t")
+                    stderr.write("[D::%s] data of thread-%d before sp_count:\n" % (func, i))
+                    thdata.show(fp = stderr, prefix = "\t")
                 mp_result.append(pool.apply_async(
                         func = sp_count, 
                         args = (thdata, ), 
@@ -292,14 +293,14 @@ def pileup_core(argv, conf):
             retcode_list = [item[0] for item in mp_result]
             thdata_list = [item[1] for item in mp_result]
             if conf.debug > 0:
-                sys.stderr.write("[D::%s] returned values of multi-processing:\n" % func)
-                sys.stderr.write("\t%s\n" % str(retcode_list))
+                stderr.write("[D::%s] returned values of multi-processing:\n" % func)
+                stderr.write("\t%s\n" % str(retcode_list))
 
         # check running status of each sub-process
         for thdata in thdata_list:         
             if conf.debug > 0:
-                sys.stderr.write("[D::%s] data of thread-%d after sp_count:\n" % (func, thdata.idx))
-                thdata.show(fp = sys.stderr, prefix = "\t")
+                stderr.write("[D::%s] data of thread-%d after sp_count:\n" % (func, thdata.idx))
+                thdata.show(fp = stderr, prefix = "\t")
             if thdata.ret < 0:
                 raise ValueError("[%s] errcode %d" % (func, -3))
 
@@ -354,22 +355,22 @@ def pileup_core(argv, conf):
                 raise ValueError("[%s] errcode %d" % (func, -21))
 
     except ValueError as e:
-        sys.stderr.write("[E::%s] '%s'\n" % (func, str(e)))
-        sys.stdout.write("[E::%s] Running program failed.\n" % func)
-        sys.stdout.write("[E::%s] Quiting ...\n" % func)
+        stderr.write("[E::%s] '%s'\n" % (func, str(e)))
+        stdout.write("[E::%s] Running program failed.\n" % func)
+        stdout.write("[E::%s] Quiting ...\n" % func)
         ret = -1
 
     else:
-        sys.stdout.write("[I::%s] All Done!\n" % func)
+        stdout.write("[I::%s] All Done!\n" % func)
         ret = 0
 
     finally:
-        sys.stdout.write("[I::%s] CMD: %s\n" % (func, cmdline))
+        stdout.write("[I::%s] CMD: %s\n" % (func, cmdline))
 
         end_time = time.time()
         time_str = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(end_time))
-        sys.stdout.write("[I::%s] end time: %s\n" % (func, time_str))
-        sys.stdout.write("[I::%s] time spent: %.2fs\n" % (func, end_time - start_time))
+        stdout.write("[I::%s] end time: %s\n" % (func, time_str))
+        stdout.write("[I::%s] time spent: %.2fs\n" % (func, end_time - start_time))
 
     return(ret)
 
@@ -382,7 +383,7 @@ def pileup_main(argv):
     func = "pileup_main"
 
     if len(argv) <= 2:
-        usage(sys.stderr)
+        usage(stderr)
         sys.exit(1)
 
     conf = Config()
@@ -405,7 +406,7 @@ def pileup_main(argv):
         elif op in ("-R", "--region"): conf.region_fn = val
         elif op in ("-P", "--phasedsnp"): conf.snp_fn = val
         elif op in ("-b", "--barcode"): conf.barcode_fn = val
-        elif op in ("-h", "--help"): usage(sys.stderr); sys.exit(1)
+        elif op in ("-h", "--help"): usage(stderr); sys.exit(1)
         elif op in ("-D", "--debug"): conf.debug = int(val)
 
         elif op in ("-p", "--proc"): conf.nproc = int(val)
@@ -423,7 +424,7 @@ def pileup_main(argv):
         elif op in ("--countorphan"): conf.no_orphan = False
 
         else:
-            sys.stderr.write("[E::%s] invalid option: '%s'.\n" % (func, op))
+            stderr.write("[E::%s] invalid option: '%s'.\n" % (func, op))
             return(-1)
 
     ret = pileup_core(argv, conf)

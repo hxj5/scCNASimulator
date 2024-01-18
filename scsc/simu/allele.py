@@ -3,6 +3,7 @@
 
 import os
 import sys
+from sys import stdout, stderr
 
 
 class AlleleUMI:
@@ -72,7 +73,7 @@ def load_allele_umi(fn_list, verbose = False):
 
     for fn in fn_list:
         if not os.path.exists(fn):
-            sys.stderr.write("[E::%s] '%s' does not exist in umi_dir.\n" % (func, fn))
+            stderr.write("[E::%s] '%s' does not exist in umi_dir.\n" % (func, fn))
             raise OSError
         fp = open(fn, "r")
         for line in fp:
@@ -82,7 +83,7 @@ def load_allele_umi(fn_list, verbose = False):
             ret = au.add(cell, reg_id, umi, ale_idx)
             if ret != 0:
                 if verbose:
-                    sys.stderr.write("[W::%s] UMI '%s' is not uniquely aligned to one allele.\n" % \
+                    stderr.write("[W::%s] UMI '%s' is not uniquely aligned to one allele.\n" % \
                             (func, umi))
         fp.close()
 
