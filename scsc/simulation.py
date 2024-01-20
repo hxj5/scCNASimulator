@@ -17,31 +17,40 @@ from .simu.utils import load_cell_anno, assert_e, assert_n
 
 
 def prepare_args(conf):
-    assert_e(conf.bam_fn)
+    assert_e(conf.sam_fn)
 
     if not os.path.exists(conf.out_dir):
         os.mkdir(conf.out_dir)
 
     assert_e(conf.cell_anno_fn)
-    conf.cell_anno = load_cell_anno(conf.cell_anno_fn)
-
     assert_e(conf.cnv_profile_fn)
-    merged_cnv_profile_fn = os.path.join(conf.out_dir, "merged.cnv_profile.tsv")
-    merge_cnv_profile(conf.cnv_profile_fn, merged_cnv_profile_fn, max_gap = 1)
-    conf.cnv_profile = load_cnv_profile(merged_cnv_profile_fn, sep = "\t",
-                                        verbose = True)
-
     assert_e(conf.umi_dir)
 
     assert_n(conf.cell_tag)
     assert_n(conf.umi_tag)
 
+    conf.merged_cnv_profile_fn = os.path.join(conf.out_dir, "merged.cnv_profile.tsv")
+    conf.out_sam_fn = os.path.join(conf.out_dir, "out.bam")
 
-def __write_read(read, sam, umi, umi_tag):
-    read.query_name += "_0"
+
+def __write_read(read, sam, umi, umi_tag, qname = None, idx = 0, umi_suffix_len = 4):
+    if idx < 0 or idx >= 2 ^ umi_suffix_len:
+        raise ValueError
+
+    if qname is None:
+        read.query_name += "_" + str(idx)
+    else:
+        read.query_name = qname + "_" + str(idx)
+
     if not umi:
         sam.write(read)
-    umi += "AAAA"
+        return
+
+    x = ["ACGT"[(idx >> (2 * i)) & 3] for i in range(umi_suffix_len)]
+    x.reverse()
+    umi_suffix = "".join(x)
+
+    umi += umi_suffix
     read.set_tag(umi_tag, umi)
     sam.write(read)
 
@@ -55,9 +64,10 @@ def simu_cnv(
 
     clone = None
     flag = -1
+    cn = None      # copy number
     for read in in_sam.fetch():
         if not read.has_tag(umi_tag):
-            __write_read(read, out_sam, umi, umi_tag)
+            __write_read(read, out_sam, None, umi_tag)
             continue
         umi = read.get_tag(umi_tag)
 
@@ -66,81 +76,95 @@ def simu_cnv(
             continue
         cell = read.get_tag(cell_tag)
 
+        if not read.query_name:
+            __write_read(read, out_sam, umi, umi_tag)
+            continue
+        qname = read.query_name
+
         if cell not in cell_anno:    # cell not in CNV clone.
             __write_read(read, out_sam, umi, umi_tag)
             continue
         clone = cell_anno[cell]
 
-        # check whether read is in CNV region
-        # even if it is ambiguous UMI, for copy gain and copy loss, it
-        # may still be forked or deleted.
-        
-        chrom = read.reference_name
-        if not chrom:
-            __write_read(read, out_sam, umi, umi_tag)
-            continue
-        positions = read.get_reference_positions()        # 0-based
-        if not positions:
-            __write_read(read, out_sam, umi, umi_tag)
-            continue
-        start, end = positions[0] + 1, positions[-1] + 2
+        # check whether the read has allele information.
 
-        ###
         res = allele_umi.query(cell, umi)
-        if res is None:              # ambiguous UMIs
-            __write_read(read, out_sam, umi, umi_tag)
-            continue
-        allele, reg_id_list = res[:2]
-        if len(reg_id_set) != 1:
-            flag = 2
-        reg_id = reg_id_list[0]
 
+        if res is None:    # ambiguous UMIs
 
-        ret, cn_ale = cnv_profile.query(reg_id, clone)
-        if ret < 0:
-            raise ValueError
-        if ret != 0:
-            flag = 3
-        cn = cn_ale[allele]     # copy number
+            # check whether read is in CNV region
+            # for copy gain and copy loss, ambiguous UMIs may still be forked 
+            # or deleted.
 
-        if cn == 0:
-            continue
-        elif cn == 1:
-            __write_read(read, out_sam, umi, umi_tag)
-            continue
-        else:
-            
+            # Note:
+            # Currently fork or deletion in read level is not perfect
+            # as it should be done in UMI level.
+            # For example, one UMI may overlap with the copy gain regions, 
+            # hence all its reads should be forked, while in current scheme,
+            # reads of the UMI that do not overlap CNV regions will not be
+            # forked.
+            # This should have little influence on the CNV simulation, as the
+            # number of these reads should be very small considering the length
+            # of CNV regions and UMIs.
+        
+            chrom = read.reference_name
+            if not chrom:
+                __write_read(read, out_sam, umi, umi_tag)
+                continue
+            positions = read.get_reference_positions()        # 0-based
+            if not positions:
+                __write_read(read, out_sam, umi, umi_tag)
+                continue
+            start, end = positions[0] + 1, positions[-1] + 1  # 1-based
+
+            ret, cn_ale = cnv_profile.fetch(chrom, start, end + 1, clone)
+            if ret < 0:
+                raise ValueError
+            if ret != 0:           # not in CNV region or overlap multiple CNV regions with distinct CNV profiles.
+                __write_read(read, out_sam, umi, umi_tag)
+                continue
+            cn0, cn1 = cn_ale[:2]
 
             rand_f = np.random.rand()
-            if clone_id == 0:
-                n_umi_c0_amb += 1
-                if rand_f < prob0:
-                    umi_del[cb]["amb"].add(umi)
-                else:
-                    out_sam.write(read)
+            if rand_f < 0.5:
+                cn = cn0
             else:
-                n_umi_c1_amb += 1
-                if rand_f < prob1:
-                    umi_del[cb]["amb"].add(umi)
-                else:
-                    out_sam.write(read)
+                cn = cn1
 
-    print("[I::%s] #umi_c0_a0=%d; #umi_c0_a1=%d; #umi_c0_amb=%d." % (
-        func, n_umi_c0_a0, n_umi_c0_a1, n_umi_c0_amb))
-    print("[I::%s] #umi_c1_a0=%d; #umi_c1_a1=%d; #umi_c1_amb=%d." % (
-        func, n_umi_c1_a0, n_umi_c1_a1, n_umi_c1_amb))
+            if cn <= 0:
+                continue
+            elif cn == 1:
+                __write_read(read, out_sam, umi, umi_tag)
+                continue
+            else:
+                # update the QNAME and UMI of the forked reads.
+                for i in range(cn):
+                    __write_read(read, out_sam, umi, umi_tag, qname, i)
 
-    n_umi_del = {}
-    for cell in umi_del.keys():
-        n_umi_del[cell] = {
-            "clone_id": umi_del[cell]["clone_id"],
-            "a0": len(umi_del[cell]["a0"]),
-            "a1": len(umi_del[cell]["a1"]),
-            "amb": len(umi_del[cell]["amb"])
-        }
+        else:
+            allele, reg_id_list = res[:2]
+            if len(reg_id_set) != 1:
+                __write_read(read, out_sam, umi, umi_tag)
+                continue
+            reg_id = reg_id_list[0]
 
-    return (n_umi_del)
+            ret, cn_ale = cnv_profile.query(reg_id, clone)
+            if ret < 0:
+                raise ValueError
+            if ret != 0:
+                __write_read(read, out_sam, umi, umi_tag)
+                continue
+            cn = cn_ale[allele]     # copy number
 
+            if cn == 0:
+                continue
+            elif cn == 1:
+                __write_read(read, out_sam, umi, umi_tag)
+                continue
+            else:
+                for i in range(cn):
+                    __write_read(read, out_sam, umi, umi_tag, qname, i)
+            
 
 def usage(fp = stderr):
     s =  "\n" 
@@ -148,7 +172,6 @@ def usage(fp = stderr):
     s += "Usage: %s %s <options>\n" % (APP, COMMAND)
     s += "\n" 
     s += "Options:\n"
-    s += "  --sid STR              Sample ID.\n"
     s += "  --sam FILE             Indexed BAM/SAM/CRAM file.\n"
     s += "  --outdir DIR           Output dir.\n"
     s += "  --cellAnno FILE        Cell annotation file, 2 columns.\n"
@@ -168,60 +191,53 @@ def simu_core(argv, conf):
     ret = -1
 
     prepare_args(conf)
+    conf.show(stderr)
 
-    ###
+    #
+    stdout.write("[I::%s] load clone annotation.\n" % func)
+
+    cell_anno = load_cell_anno(conf.cell_anno_fn)
+
+    #
+    stdout.write("[I::%s] merge CNV profile.\n" % func)
+
+    merge_cnv_profile(conf.cnv_profile_fn, conf.merged_cnv_profile_fn, max_gap = 1)
+    cnv_profile = load_cnv_profile(conf.merged_cnv_profile_fn, sep = "\t",
+                                verbose = True)
+
+    #
     stdout.write("[I::%s] load allele-specific UMIs.\n" % func)
 
     fn_list = []
     for fn in os.listdir(conf.umi_dir):
-        if fn.startswith("allele_umi") and fn.endswith(".tsv"):
+        if fn.startswith(conf.umi_fn_prefix) and fn.endswith(conf.umi_fn_suffix):
             fn_list.append(os.path.join(conf.umi_dir, fn))
 
     allele_umi = load_allele_umi(fn_list, verbose = True)
 
-    ###
-    print("[I::%s] simulate copy loss in each of the two clones." % func)
+    #
+    stdout.write("[I::%s] simulate copy number variations.\n" % func)
 
-    in_sam = pysam.AlignmentFile(conf.bam_fn, "rb")
-    out_sam_fn = os.path.join(conf.out_dir, "out.bam")
-    out_sam = pysam.AlignmentFile(out_sam_fn, "wb", template = in_sam)
+    in_sam = pysam.AlignmentFile(conf.sam_fn, "rb")
+    out_sam = pysam.AlignmentFile(conf.out_sam_fn, "wb", template = in_sam)
 
-    n_umi_del = simu_loss(
+    simu_cnv(
         in_sam = in_sam,
         out_sam = out_sam,
-        chrom = conf.chrom,
+        cell_anno = cell_anno,
+        cnv_profile = cnv_profile,
+        allele_umi = allele_umi,
         cell_tag = conf.cell_tag,
         umi_tag = conf.umi_tag,
-        clone0 = clone0,
-        clone1 = clone1,
-        ale_umi = ale_umi,
-        prob0 = conf.clone_prob[0],
-        prob1 = conf.clone_prob[1],
-        seed = conf.seed
     )
 
     in_sam.close()
     out_sam.close()
 
-    out_fn = os.path.join(conf.out_dir, "cell_by_allele_UMI_counts.tsv")
-    s = "\t".join(["cell", "clone_id", "umi_a0", "umi_a1", "umi_shared",
-            "umi_del_a0", "umi_del_a1", "umi_del_amb"]) + "\n"
-    for cell in sorted(n_umi_del.keys()):
-        flag = True if cell in ale_umi_cnt else False
-        s += "\t".join([
-            cell,
-            str(n_umi_del[cell]["clone_id"]),
-            str(ale_umi_cnt[cell]["a0"]) if flag else "NA",
-            str(ale_umi_cnt[cell]["a1"]) if flag else "NA",
-            str(ale_umi_cnt[cell]["shared"]) if flag else "NA",
-            str(n_umi_del[cell]["a0"]),
-            str(n_umi_del[cell]["a1"]),
-            str(n_umi_del[cell]["amb"]),
-        ]) + "\n"
-    with open(out_fn, "w") as fp:
-        fp.write(s)
+    stdout.write("[I::%s] All Done!\n" % func)
 
-    print("[I::%s] All Done!" % func)
+    ret = 0
+    return(ret)
 
 
 def simu_main(argv):
@@ -244,7 +260,7 @@ def simu_main(argv):
     for op, val in opts:
         if len(op) > 2:
             op = op.lower()
-        if op in ("--sam"): conf.bam_fn = val
+        if op in ("--sam"): conf.sam_fn = val
         elif op in ("--outdir"): conf.out_dir = val
         elif op in ("--cellanno"): conf.cell_anno_fn = val
         elif op in ("--cnvprofile"): conf.cnv_profile_fn = val
