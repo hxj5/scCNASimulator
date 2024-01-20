@@ -33,6 +33,12 @@ def prepare_args(conf):
     conf.out_sam_fn = os.path.join(conf.out_dir, "out.bam")
 
 
+# Note,
+# we create new UMI barcodes by simply adding distinct suffix to the original
+# UMI barcode. Alternatively, we can iterate the BAM file to get all unique UMI
+# barcodes first, and then create new ones. However, the latter strategy is
+# inefficient and not easy to implement.
+
 def __write_read(read, sam, umi, umi_tag, qname = None, idx = 0, umi_suffix_len = 4):
     if idx < 0 or idx >= 2 ^ umi_suffix_len:
         raise ValueError
