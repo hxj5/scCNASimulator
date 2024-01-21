@@ -13,7 +13,8 @@ from .blib.region import format_chrom
 from .simu.allele import load_allele_umi
 from .simu.cnv import load_cnv_profile, merge_cnv_profile
 from .simu.config import Config
-from .simu.utils import load_cell_anno, assert_e, assert_n
+from .simu.utils import load_cell_anno
+from .utils import assert_e, assert_n
 
 
 def prepare_args(conf):
@@ -170,26 +171,6 @@ def simu_cnv(
             else:
                 for i in range(cn):
                     __write_read(read, out_sam, umi, umi_tag, qname, i)
-            
-
-def usage(fp = stderr):
-    s =  "\n" 
-    s += "Version: %s\n" % (VERSION, )
-    s += "Usage: %s %s <options>\n" % (APP, COMMAND)
-    s += "\n" 
-    s += "Options:\n"
-    s += "  --sam FILE             Indexed BAM/SAM/CRAM file.\n"
-    s += "  --outdir DIR           Output dir.\n"
-    s += "  --cellAnno FILE        Cell annotation file, 2 columns.\n"
-    s ++ "  --cnvProfile FILE      CNV profile file, 6 columns.\n"
-    s += "  --UMIdir DIR           Dir storing gene-specific UMI files.\n"
-    s += "  --cellTAG STR          Cell barcode tag.\n"
-    s += "  --UMItag STR           UMI tag.\n"
-    s += "  --version              Print version and exit.\n"
-    s += "  --help                 Print this message and exit.\n"
-    s += "\n"
-
-    fp.write(s)
 
 
 def simu_core(argv, conf):
@@ -244,16 +225,38 @@ def simu_core(argv, conf):
 
     ret = 0
     return(ret)
+            
+
+def usage(fp = stderr):
+    s =  "\n" 
+    s += "Version: %s\n" % (VERSION, )
+    s += "Usage: %s %s <options>\n" % (APP, COMMAND)
+    s += "\n" 
+    s += "Options:\n"
+    s += "  --sam FILE             Indexed BAM/SAM/CRAM file.\n"
+    s += "  --outdir DIR           Output dir.\n"
+    s += "  --cellAnno FILE        Cell annotation file, 2 columns.\n"
+    s ++ "  --cnvProfile FILE      CNV profile file, 6 columns.\n"
+    s += "  --UMIdir DIR           Dir storing gene-specific UMI files.\n"
+    s += "  --cellTAG STR          Cell barcode tag.\n"
+    s += "  --UMItag STR           UMI tag.\n"
+    s += "  --version              Print version and exit.\n"
+    s += "  --help                 Print this message and exit.\n"
+    s += "\n"
+
+    fp.write(s)
 
 
-def simu_main(argv):
+def simu_main(argv, conf = None):
     func = "simu_main"
 
     if len(argv) <= 2:
         usage(stderr)
         sys.exit(1)
 
-    conf = Config()
+    if conf is None:
+        conf = Config()
+
     opts, args = getopt.getopt(argv[2:], "", [
         "sam=",
         "outdir=",

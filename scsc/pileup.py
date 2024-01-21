@@ -17,13 +17,7 @@ import time
 
 from .app import APP
 from .blib.zfile import zopen, ZF_F_GZIP, ZF_F_PLAIN
-from .plp.config import Config, \
-        CFG_DEBUG, \
-        CFG_CELL_TAG, CFG_UMI_TAG, CFG_UMI_TAG_BC, \
-        CFG_NPROC,     \
-        CFG_MIN_COUNT, CFG_MIN_MAF, \
-        CFG_INCL_FLAG, CFG_EXCL_FLAG_UMI, CFG_EXCL_FLAG_XUMI, \
-        CFG_MIN_LEN, CFG_MIN_MAPQ
+from .plp.config import Config, DefaultConfig
 from .plp.core import sp_count
 from .plp.region import load_region_from_txt, load_snp_from_vcf, \
                         load_snp_from_tsv
@@ -123,7 +117,7 @@ def prepare_config(conf):
             if conf.barcodes is None:
                 conf.umi_tag = None
             else:
-                conf.umi_tag = CFG_UMI_TAG_BC
+                conf.umi_tag = conf.defaults.PLP_UMI_TAG_BC
         elif conf.umi_tag.upper() == "NONE":
             conf.umi_tag = None
     else:
@@ -136,46 +130,11 @@ def prepare_config(conf):
 
     if conf.excl_flag < 0:
         if conf.use_umi():
-            conf.excl_flag = CFG_EXCL_FLAG_UMI
+            conf.excl_flag = conf.defaults.PLP_EXCL_FLAG_UMI
         else:
-            conf.excl_flag = CFG_EXCL_FLAG_XUMI
+            conf.excl_flag = conf.defaults.PLP_EXCL_FLAG_XUMI
 
     return(0)
-
-
-def usage(fp = stderr):
-    s =  "\n" 
-    s += "Usage: %s %s <options>\n" % (APP, COMMAND)  
-    s += "\n" 
-    s += "Options:\n"
-    s += "  -s, --sam STR          Indexed sam/bam/cram file.\n"
-    s += "  -O, --outdir DIR       Output directory for sparse matrices.\n"
-    s += "  -R, --region FILE      A TSV file listing target regions. The first 4 columns shoud be:\n"
-    s += "                         chrom, start, end (both 1-based and inclusive), name.\n"
-    s += "  -P, --phasedSNP FILE   A TSV or VCF file listing phased SNPs (i.e., containing phased GT).\n"
-    s += "  -b, --barcode FILE     A plain file listing all effective cell barcode.\n"
-    s += "  -h, --help             Print this message and exit.\n"
-    s += "  -D, --debug INT        Used by developer for debugging [%d]\n" % CFG_DEBUG
-    s += "\n"
-    s += "Optional arguments:\n"
-    s += "  -p, --nproc INT        Number of processes [%d]\n" % CFG_NPROC
-    s += "  --cellTAG STR          Tag for cell barcodes [%s]\n" % CFG_CELL_TAG
-    s += "  --UMItag STR           Tag for UMI, set to None when reads only [%s]\n" % CFG_UMI_TAG
-    s += "  --minCOUNT INT         Mininum aggragated count for SNP [%d]\n" % CFG_MIN_COUNT
-    s += "  --minMAF FLOAT         Mininum minor allele fraction for SNP [%f]\n" % CFG_MIN_MAF
-    s += "  --outputAllReg         If set, output all inputted regions.\n"
-    s += "  --countDupHap          If set, UMIs aligned to both haplotypes will be counted.\n"
-    s += "\n"
-    s += "Read filtering:\n"
-    s += "  --inclFLAG INT    Required flags: skip reads with all mask bits unset [%d]\n" % CFG_INCL_FLAG
-    s += "  --exclFLAG INT    Filter flags: skip reads with any mask bits set [%d\n" % CFG_EXCL_FLAG_UMI
-    s += "                    (when use UMI) or %d (otherwise)]\n" % CFG_EXCL_FLAG_XUMI
-    s += "  --minLEN INT      Minimum mapped length for read filtering [%d]\n" % CFG_MIN_LEN
-    s += "  --minMAPQ INT     Minimum MAPQ for read filtering [%d]\n" % CFG_MIN_MAPQ
-    s += "  --countORPHAN     If use, do not skip anomalous read pairs.\n"
-    s += "\n"
-
-    fp.write(s)
 
 
 def show_progress(rv = None):
@@ -375,18 +334,56 @@ def pileup_core(argv, conf):
     return(ret)
 
 
-def pileup_main(argv):
+def usage(fp = stderr, conf = None):
+    s =  "\n" 
+    s += "Usage: %s %s <options>\n" % (APP, COMMAND)  
+    s += "\n" 
+    s += "Options:\n"
+    s += "  -s, --sam FILE         Indexed sam/bam/cram file.\n"
+    s += "  -O, --outdir DIR       Output directory for sparse matrices.\n"
+    s += "  -R, --region FILE      A TSV file listing target regions. The first 4 columns shoud be:\n"
+    s += "                         chrom, start, end (both 1-based and inclusive), name.\n"
+    s += "  -P, --phasedSNP FILE   A TSV or VCF file listing phased SNPs (i.e., containing phased GT).\n"
+    s += "  -b, --barcode FILE     A plain file listing all effective cell barcode.\n"
+    s += "  -h, --help             Print this message and exit.\n"
+    s += "  -D, --debug INT        Used by developer for debugging [%d]\n" % conf.PLP_DEBUG
+    s += "\n"
+    s += "Optional arguments:\n"
+    s += "  -p, --nproc INT        Number of processes [%d]\n" % conf.PLP_NPROC
+    s += "  --cellTAG STR          Tag for cell barcodes [%s]\n" % conf.PLP_CELL_TAG
+    s += "  --UMItag STR           Tag for UMI, set to None when reads only [%s]\n" % conf.PLP_UMI_TAG
+    s += "  --minCOUNT INT         Mininum aggragated count for SNP [%d]\n" % conf.PLP_MIN_COUNT
+    s += "  --minMAF FLOAT         Mininum minor allele fraction for SNP [%f]\n" % conf.PLP_MIN_MAF
+    s += "  --outputAllReg         If set, output all inputted regions.\n"
+    s += "  --countDupHap          If set, UMIs aligned to both haplotypes will be counted.\n"
+    s += "\n"
+    s += "Read filtering:\n"
+    s += "  --inclFLAG INT    Required flags: skip reads with all mask bits unset [%d]\n" % conf.PLP_INCL_FLAG
+    s += "  --exclFLAG INT    Filter flags: skip reads with any mask bits set [%d\n" % conf.PLP_EXCL_FLAG_UMI
+    s += "                    (when use UMI) or %d (otherwise)]\n" % conf.PLP_EXCL_FLAG_XUMI
+    s += "  --minLEN INT      Minimum mapped length for read filtering [%d]\n" % conf.PLP_MIN_LEN
+    s += "  --minMAPQ INT     Minimum MAPQ for read filtering [%d]\n" % conf.PLP_MIN_MAPQ
+    s += "  --countORPHAN     If use, do not skip anomalous read pairs.\n"
+    s += "\n"
+
+    fp.write(s)
+
+
+def pileup_main(argv, conf = None):
     """Command-Line interface.
     @param argv   A list of cmdline parameters [list]
+    @param conf   The plp.Config object.
     @return       0 if success, -1 otherwise [int]
     """
     func = "pileup_main"
 
+    if conf is None:
+        conf = Config()
+
     if len(argv) <= 2:
-        usage(stderr)
+        usage(stderr, conf.defaults)
         sys.exit(1)
 
-    conf = Config()
     opts, args = getopt.getopt(argv[2:], "-s:-O:-R:-P:-b:-h-D:-p:", [
                      "sam=", 
                      "outdir=", 
@@ -406,7 +403,7 @@ def pileup_main(argv):
         elif op in ("-R", "--region"): conf.region_fn = val
         elif op in ("-P", "--phasedsnp"): conf.snp_fn = val
         elif op in ("-b", "--barcode"): conf.barcode_fn = val
-        elif op in ("-h", "--help"): usage(stderr); sys.exit(1)
+        elif op in ("-h", "--help"): usage(stderr, conf.defaults); sys.exit(1)
         elif op in ("-D", "--debug"): conf.debug = int(val)
 
         elif op in ("-p", "--proc"): conf.nproc = int(val)

@@ -6,26 +6,28 @@ from ..app import APP
 
 class Config:
     def __init__(self):
+        self.defaults = DefaultConfig()
+
         self.sam_fn = None
         self.out_dir = None
         self.region_fn = None
         self.snp_fn = None
         self.barcode_fn = None
-        self.debug = CFG_DEBUG
+        self.debug = self.defaults.PLP_DEBUG
 
-        self.cell_tag = CFG_CELL_TAG
-        self.umi_tag = CFG_UMI_TAG
-        self.nproc = CFG_NPROC
-        self.min_count = CFG_MIN_COUNT
-        self.min_maf = CFG_MIN_MAF
-        self.output_all_reg = CFG_OUTPUT_ALL_REG
-        self.no_dup_hap = CFG_NO_DUP_HAP
+        self.cell_tag = self.defaults.PLP_CELL_TAG
+        self.umi_tag = self.defaults.PLP_UMI_TAG
+        self.nproc = self.defaults.PLP_NPROC
+        self.min_count = self.defaults.PLP_MIN_COUNT
+        self.min_maf = self.defaults.PLP_MIN_MAF
+        self.output_all_reg = self.defaults.PLP_OUTPUT_ALL_REG
+        self.no_dup_hap = self.defaults.PLP_NO_DUP_HAP
 
-        self.min_mapq = CFG_MIN_MAPQ
-        self.min_len = CFG_MIN_LEN
-        self.incl_flag = CFG_INCL_FLAG
+        self.min_mapq = self.defaults.PLP_MIN_MAPQ
+        self.min_len = self.defaults.PLP_MIN_LEN
+        self.incl_flag = self.defaults.PLP_INCL_FLAG
         self.excl_flag = -1
-        self.no_orphan = CFG_NO_ORPHAN
+        self.no_orphan = self.defaults.PLP_NO_ORPHAN
 
         self.sam = None          # a pysam::AlignmentFile object.
         self.barcodes = None     # list of barcode strings.
@@ -91,22 +93,26 @@ class Config:
         return self.umi_tag is not None
 
 
-CFG_DEBUG = 0
-CFG_CELL_TAG = "CB"
-CFG_UMI_TAG = "UB"
-CFG_UMI_TAG_BC = "UB"    # the default umi tag for 10x data.
-CFG_NPROC = 1
-CFG_MIN_COUNT = 1 
-CFG_MIN_MAF = 0
-CFG_OUTPUT_ALL_REG = False
-CFG_NO_DUP_HAP = True
+class DefaultConfig:
 
-CFG_MIN_MAPQ = 20
-CFG_MIN_LEN = 30
-CFG_INCL_FLAG = 0
-CFG_EXCL_FLAG_UMI = 772
-CFG_EXCL_FLAG_XUMI = 1796
-CFG_NO_ORPHAN = True
+    def __init__(self):
+        self.PLP_DEBUG = 0
+        self.PLP_CELL_TAG = "CB"
+        self.PLP_UMI_TAG = "UB"
+        self.PLP_UMI_TAG_BC = "UB"    # the default umi tag for 10x data.
+        self.PLP_NPROC = 1
+        self.PLP_MIN_COUNT = 1 
+        self.PLP_MIN_MAF = 0
+        self.PLP_OUTPUT_ALL_REG = False
+        self.PLP_NO_DUP_HAP = True
+
+        self.PLP_MIN_MAPQ = 20
+        self.PLP_MIN_LEN = 30
+        self.PLP_INCL_FLAG = 0
+        self.PLP_EXCL_FLAG_UMI = 772
+        self.PLP_EXCL_FLAG_XUMI = 1796
+        self.PLP_NO_ORPHAN = True
+
 
 if __name__ == "__main__":
     conf = Config()
