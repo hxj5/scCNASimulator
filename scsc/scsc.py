@@ -16,7 +16,7 @@ def usage(fp = stderr):
     s += "Usage: %s [commands|options]\n" % (APP, )  
     s += "\n" 
     s += "Commands:\n"
-    s += "  main              Run all steps.\n"
+    #s += "  main              Run all steps.\n"
     s += "  plp               Pileup allele-specific UMIs.\n"
     s += "  simu              CNV Simulation.\n"
     s += "\n" 
@@ -36,8 +36,8 @@ def main():
         sys.exit(1)
 
     cmd = sys.argv[1]
-    if cmd == "main": usage(stderr); sys.exit(1)
-    elif cmd == "plp": pileup_main(sys.argv)
+    #if cmd == "main": usage(stderr); sys.exit(1)
+    if cmd == "plp": pileup_main(sys.argv)
     elif cmd == "simu": simu_main(sys.argv)
     elif cmd in ("-V", "--version"): stderr.write("%s\n" % VERSION); sys.exit(1)
     elif op in ("-h", "--help"): usage(); sys.exit(1)
