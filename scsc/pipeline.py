@@ -165,15 +165,16 @@ def pipeline_main(argv):
     """
     func = "pipeline_main"
 
+    plp_conf = PlpConfig()
+
     if len(argv) <= 2:
-        usage(stderr)
+        usage(stderr, plp_conf.defaults)
         sys.exit(1)
 
-    stdout.write("[I::%s] start ...\n" % (func, ))
-
     conf = Config()
-    plp_conf = PlpConfig()
     simu_conf = SimuConfig()
+
+    stdout.write("[I::%s] start ...\n" % (func, ))
 
     opts, args = getopt.getopt(argv[2:], "-s:-O:-P:-b:-h-D:-p:", [
                      "sam=", 
@@ -195,7 +196,7 @@ def pipeline_main(argv):
         elif op in (      "--cnvProfile"): conf.cnv_profile_fn = val
         elif op in ("-P", "--phasedsnp"): conf.snp_fn = val
         elif op in ("-b", "--barcode"): conf.barcode_fn = val
-        elif op in ("-h", "--help"): usage(stderr); sys.exit(1)
+        elif op in ("-h", "--help"): usage(stderr, plp_conf.defaults); sys.exit(1)
         elif op in ("-D", "--debug"): conf.debug = int(val)
 
         elif op in ("-p", "--proc"): conf.nproc = int(val)

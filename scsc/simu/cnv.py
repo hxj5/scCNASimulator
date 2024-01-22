@@ -5,7 +5,7 @@ import functools
 import sys
 from sys import stdout, stderr
 
-from ..blib.region import format_chrom, format_start, format_end  \
+from ..blib.region import format_chrom, format_start, format_end,  \
                     Region, RegionSet, reg2str
 from ..blib.zfile import zopen
 
@@ -87,7 +87,7 @@ class CNVProfile:
         return(dat)     
         
     def query(self, name):
-        "Query CNV profile for the given region and clone.
+        """Query CNV profile for the given region and clone.
         @param name       The ID of the CNV region [str]
         @param clone_id   The ID of the CNV clone [str]
         @return           see @return of @func CNVProfile::fetch()
@@ -152,7 +152,7 @@ class CloneCNVProfile:
         return(dat_list)
 
     def query(self, name, clone_id):
-        "Query CNV profile for the given region and clone.
+        """Query CNV profile for the given region and clone.
         @param name       The ID of the CNV region [str]
         @param clone_id   The ID of the CNV clone [str]
         @return         see @return of @func CNVProfile::fetch()
@@ -271,7 +271,7 @@ def merge_cnv_profile(in_fn, out_fn, max_gap = 1):
                 iv_list.extend([(s, e, cn_ale0, cn_ale1) for s, e in ch_dat[ale_key]])
             iv_list = sorted(iv_list, key = functools.cmp_to_key(__cmp_two_intervals))
             s1, e1 = iv_list[0][:2]
-            for iv in in iv_list[1:]:
+            for iv in iv_list[1:]:
                 s2, e2 = iv[:2]
                 if s2 <= e1:    # overlap adjacent region
                     stderr.write("[E::%s] distinct CNV profiles '%s', (%d, %d) and (%d, %d).\n" % 

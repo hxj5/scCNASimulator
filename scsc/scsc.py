@@ -18,7 +18,7 @@ def usage(fp = stderr):
     s += "\n" 
     s += "Commands:\n"
     s += "  pipeline          Run all steps.\n"
-    s += "  plp               Pileup allele-specific UMIs.\n"
+    s += "  pileup            Pileup allele-specific UMIs.\n"
     s += "  simu              CNV Simulation.\n"
     s += "\n" 
     s += "Options:\n"
@@ -38,7 +38,7 @@ def main():
 
     cmd = sys.argv[1]
     if cmd == "pipeline": pipeline_main(sys.argv)
-    elif cmd == "plp": pileup_main(sys.argv)
+    elif cmd == "pileup": pileup_main(sys.argv)
     elif cmd == "simu": simu_main(sys.argv)
     elif cmd in ("-V", "--version"): stderr.write("%s\n" % VERSION); sys.exit(1)
     elif cmd in ("-h", "--help"): usage(); sys.exit(1)

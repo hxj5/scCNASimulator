@@ -236,7 +236,7 @@ def usage(fp = stderr):
     s += "  --sam FILE             Indexed BAM/SAM/CRAM file.\n"
     s += "  --outdir DIR           Output dir.\n"
     s += "  --cellAnno FILE        Cell annotation file, 2 columns.\n"
-    s ++ "  --cnvProfile FILE      CNV profile file, 6 columns.\n"
+    s += "  --cnvProfile FILE      CNV profile file, 6 columns.\n"
     s += "  --UMIdir DIR           Dir storing gene-specific UMI files.\n"
     s += "  --cellTAG STR          Cell barcode tag.\n"
     s += "  --UMItag STR           UMI tag.\n"
