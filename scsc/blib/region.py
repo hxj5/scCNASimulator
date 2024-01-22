@@ -21,7 +21,7 @@ class RegPos(int):
         if self >= REG_MAX_POS:
             return("Inf")
         else:
-            return(str(self))
+            return("%d" % int(self))
 
 
 class Region:
@@ -232,8 +232,8 @@ def format_end(x, base = 1):
 
 def reg2str(chrom, start, end, base = 1):
     chrom = format_chrom(chrom)
-    start = format_start(start)
-    end = format_end(end)
+    start = format_start(start, base = base)
+    end = format_end(end, base = base)
     s = None
     if end >= REG_MAX_POS:
         s = "%s:%s-" % (chrom, start)

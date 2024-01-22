@@ -207,7 +207,7 @@ def __cmp_two_intervals(x1, x2):
         return s1 - s2
 
 
-def merge_cnv_profile(in_fn, out_fn, max_gap = 1):
+def merge_cnv_profile(in_fn, out_fn, max_gap = 1, verbose = False):
     """Merge adjacent regions with the same CNV profiles
 
     Merge adjacent regions with the same allele-specific copy number
@@ -217,16 +217,23 @@ def merge_cnv_profile(in_fn, out_fn, max_gap = 1):
     @param out_fn   Path to output file [str]
     @param max_gap  The maximum gap length that is allowed between two
                     adjacent regions. `1` for strict adjacence.
+    @param verbose  Whether to print detailed logging information [bool]
     @return  Void
     """
     func = "merge_cnv_profile"
+    sep = "\t"
+
+    if verbose:
+        stdout.write("[I::%s] start to merge CNV profile from file '%s' ...\n" % (func, in_fn))
 
     # load data
+
+    if verbose:
+        stdout.write("[I::%s] load data ...\n" % (func, ))
+
     fp = zopen(in_fn, "rt")
     dat = {}
     nl = 0
-    if verbose:
-        stderr.write("[I::%s] start to merge CNV profile from file '%s' ...\n" % (func, in_fn))
     for line in fp:
         nl += 1
         items = line.strip().split(sep)
@@ -247,6 +254,10 @@ def merge_cnv_profile(in_fn, out_fn, max_gap = 1):
     fp.close()
 
     # merge (clone-specific) adjacent CNVs
+
+    if verbose:
+        stdout.write("[I::%s] merge CNV profile ...\n" % (func, ))
+
     for clone_id, cl_dat in dat.items():
         for chrom, ch_dat in cl_dat.items():
             for ale_key in ch_dat.keys():
@@ -263,6 +274,10 @@ def merge_cnv_profile(in_fn, out_fn, max_gap = 1):
                 ch_dat[ale_key] = new_list
 
     # check whether there are (strictly) overlapping regions with distinct profiles
+
+    if verbose:
+        stdout.write("[I::%s] check overlapping regions ...\n" % (func, ))
+
     for clone_id, cl_dat in dat.items():
         for chrom, ch_dat in cl_dat.items():
             iv_list = []
@@ -276,10 +291,14 @@ def merge_cnv_profile(in_fn, out_fn, max_gap = 1):
                 if s2 <= e1:    # overlap adjacent region
                     stderr.write("[E::%s] distinct CNV profiles '%s', (%d, %d) and (%d, %d).\n" % 
                         (func, chrom, s1, e1, s2, e2))
-                return(None)
+                    return(None)
             cl_dat[chrom] = iv_list
 
     # save profile
+
+    if verbose:
+        stdout.write("[I::%s] save profile ...\n" % (func, ))
+
     fp = open(out_fn, "w")
     for clone_id in sorted(dat.keys()):
         cl_dat = dat[clone_id]
@@ -290,6 +309,7 @@ def merge_cnv_profile(in_fn, out_fn, max_gap = 1):
                 fp.write("\t".join([chrom, str(s), str(e), region_id, \
                     clone_id, str(cn_ale0), str(cn_ale1)]) + "\n")
     fp.close()
+    stdout.write("[I::%s] Done. File saved to '%s'.\n" % (func, out_fn))
                         
 
 def save_cnv_profile(dat, fn, verbose = False):

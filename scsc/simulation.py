@@ -188,7 +188,8 @@ def simu_core(argv, conf):
     #
     stdout.write("[I::%s] merge CNV profile.\n" % func)
 
-    merge_cnv_profile(conf.cnv_profile_fn, conf.merged_cnv_profile_fn, max_gap = 1)
+    merge_cnv_profile(conf.cnv_profile_fn, conf.merged_cnv_profile_fn, 
+                                max_gap = 1, verbose = True)
     cnv_profile = load_cnv_profile(conf.merged_cnv_profile_fn, sep = "\t",
                                 verbose = True)
 

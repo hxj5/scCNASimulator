@@ -121,7 +121,7 @@ def conf2simu_argv(conf, plp_conf):
     if conf.cell_anno_fn is not None:
         args.extend(["--cellAnno", conf.cell_anno_fn])
     if conf.merged_cnv_profile_fn is not None:
-        args.extend(["--region", conf.merged_cnv_profile_fn])
+        args.extend(["--cnvProfile", conf.merged_cnv_profile_fn])
     assert_e(plp_conf.umi_dir)
     args.extend(["--UMIdir", plp_conf.umi_dir])
     args.extend(["--cellTAG", plp_conf.cell_tag])
@@ -234,7 +234,8 @@ def pipeline_main(argv):
 
     stdout.write("[I::%s] merge clone-specific CNV profile ...\n" % (func, ))
 
-    merge_cnv_profile(conf.cnv_profile_fn, conf.merged_cnv_profile_fn, max_gap = 1)
+    merge_cnv_profile(conf.cnv_profile_fn, conf.merged_cnv_profile_fn, 
+                    max_gap = 1, verbose = True)
 
     stdout.write("[I::%s] pileup allele-specific UMIs ...\n" % (func, ))
 
