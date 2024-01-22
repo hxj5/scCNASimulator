@@ -7,8 +7,10 @@ import sys
 from sys import stdout, stderr
 
 from .app import APP
+from .pileup import pileup_main
 from .plp.config import Config as PlpConfig
 from .simu.config import Config as SimuConfig
+from .simulation import simu_main
 from .utils import assert_e, assert_n
 
 
@@ -50,7 +52,7 @@ def prepare_args(conf):
     assert_e(conf.barcode_fn)
 
 
-def conf2plp_cmdline(conf):
+def conf2plp_argv(conf):
     args = [APP, "pileup"]
 
     if conf.sam_fn is not None:
@@ -96,11 +98,14 @@ def conf2plp_cmdline(conf):
         if not conf.no_orphan:
             args.append("--countORPHAN")
 
-    cmdline = " ".join([str(x) for x in args])
-    return(cmdline)
+    #cmdline = " ".join([str(x) for x in args])
+    #return(cmdline)
+
+    args = [str(x) for x in args]
+    return(args)
 
 
-def conf2simu_cmdline(conf, plp_conf):
+def conf2simu_argv(conf, plp_conf):
     args = [APP, "simu"]
 
     if conf.sam_fn is not None:
@@ -117,8 +122,11 @@ def conf2simu_cmdline(conf, plp_conf):
     args.extend(["--cellTAG", plp_conf.cell_tag])
     args.extend(["--UMItag", plp_conf.umi_tag])
 
-    cmdline = " ".join([str(x) for x in args])
-    return(cmdline)
+    #cmdline = " ".join([str(x) for x in args])
+    #return(cmdline)
+
+    args = [str(x) for x in args]
+    return(args)
 
 
 def usage(fp = stderr, conf = None):
@@ -179,7 +187,7 @@ def pipeline_main(argv):
     opts, args = getopt.getopt(argv[2:], "-s:-O:-P:-b:-h-D:-p:", [
                      "sam=", 
                      "outdir=", 
-                     "cellAnno=", "cnvProfile=", "phasedSNP=" "barcode=",
+                     "cellAnno=", "cnvProfile=", "phasedSNP=", "barcode=",
                      "help", "debug=",
                      "nproc=", 
                      "cellTAG=", "UMItag=", 
@@ -192,14 +200,14 @@ def pipeline_main(argv):
             op = op.lower()
         if op in   ("-s", "--sam"): conf.sam_fn = val
         elif op in ("-O", "--outdir"): conf.out_dir = val
-        elif op in (      "--cellAnno"): conf.cell_anno_fn = val
-        elif op in (      "--cnvProfile"): conf.cnv_profile_fn = val
+        elif op in (      "--cellanno"): conf.cell_anno_fn = val
+        elif op in (      "--cnvprofile"): conf.cnv_profile_fn = val
         elif op in ("-P", "--phasedsnp"): conf.snp_fn = val
         elif op in ("-b", "--barcode"): conf.barcode_fn = val
         elif op in ("-h", "--help"): usage(stderr, plp_conf.defaults); sys.exit(1)
         elif op in ("-D", "--debug"): conf.debug = int(val)
 
-        elif op in ("-p", "--proc"): conf.nproc = int(val)
+        elif op in ("-p", "--nproc"): conf.nproc = int(val)
         elif op in ("--celltag"): conf.cell_tag = val
         elif op in ("--umitag"): conf.umi_tag = val
         elif op in ("--mincount"): conf.min_count = int(val)
@@ -221,7 +229,7 @@ def pipeline_main(argv):
 
     stdout.write("[I::%s] pileup allele-specific UMIs ...\n" % (func, ))
 
-    plp_argv = conf2plp_cmdline(conf)
+    plp_argv = conf2plp_argv(conf)
     ret = pileup_main(plp_argv, plp_conf)
     if ret < 0:
         stderr.write("[E::%s] pileup failed; errcode %d.\n" % (func, ret))
@@ -229,7 +237,7 @@ def pipeline_main(argv):
 
     stdout.write("[I::%s] simulate CNVs ...\n" % (func, ))
 
-    simu_argv = conf2simu_cmdline(conf, plp_conf)
+    simu_argv = conf2simu_argv(conf, plp_conf)
     ret = simu_main(simu_argv, simu_conf)
     if ret < 0:
         stderr.write("[E::%s] simulation failed; errcode %d.\n" % (func, ret))

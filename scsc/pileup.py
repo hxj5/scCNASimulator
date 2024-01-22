@@ -144,6 +144,7 @@ def show_progress(rv = None):
 def pileup_core(argv, conf):
     func = "pileup_core"
     ret = -1
+    cmdline = "[%s] unexpected command line" % func
 
     start_time = time.time()
 
@@ -387,7 +388,7 @@ def pileup_main(argv, conf = None):
     opts, args = getopt.getopt(argv[2:], "-s:-O:-R:-P:-b:-h-D:-p:", [
                      "sam=", 
                      "outdir=", 
-                     "region=", "phasedSNP=" "barcode=",
+                     "region=", "phasedSNP=", "barcode=",
                      "help", "debug=",
                      "nproc=", 
                      "cellTAG=", "UMItag=", 
@@ -406,7 +407,7 @@ def pileup_main(argv, conf = None):
         elif op in ("-h", "--help"): usage(stderr, conf.defaults); sys.exit(1)
         elif op in ("-D", "--debug"): conf.debug = int(val)
 
-        elif op in ("-p", "--proc"): conf.nproc = int(val)
+        elif op in ("-p", "--nproc"): conf.nproc = int(val)
         elif op in ("--celltag"): conf.cell_tag = val
         elif op in ("--umitag"): conf.umi_tag = val
         elif op in ("--mincount"): conf.min_count = int(val)
