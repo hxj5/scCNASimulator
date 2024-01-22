@@ -9,6 +9,7 @@ from sys import stdout, stderr
 from .app import APP
 from .pileup import pileup_main
 from .plp.config import Config as PlpConfig
+from .simu.cnv import merge_cnv_profile
 from .simu.config import Config as SimuConfig
 from .simulation import simu_main
 from .utils import assert_e, assert_n
@@ -38,6 +39,8 @@ class Config:
         self.excl_flag = None
         self.no_orphan = None
 
+        self.merged_cnv_profile_fn = None
+
 
 def prepare_args(conf):
     assert_e(conf.sam_fn)
@@ -51,6 +54,8 @@ def prepare_args(conf):
     assert_e(conf.snp_fn)
     assert_e(conf.barcode_fn)
 
+    conf.merged_cnv_profile_fn = os.path.join(conf.out_dir, "merged.cnv_profile.tsv")
+
 
 def conf2plp_argv(conf):
     args = [APP, "pileup"]
@@ -60,8 +65,8 @@ def conf2plp_argv(conf):
     if conf.out_dir is not None:
         plp_dir = os.path.join(conf.out_dir, "pileup")
         args.extend(["--outdir", plp_dir])
-    if conf.cnv_profile_fn is not None:
-        args.extend(["--region", conf.cnv_profile_fn])
+    if conf.merged_cnv_profile_fn is not None:
+        args.extend(["--region", conf.merged_cnv_profile_fn])
     if conf.snp_fn is not None:
         args.extend(["--phasedSNP", conf.snp_fn])
     if conf.barcode_fn is not None:
@@ -115,8 +120,8 @@ def conf2simu_argv(conf, plp_conf):
         args.extend(["--outdir", simu_dir])
     if conf.cell_anno_fn is not None:
         args.extend(["--cellAnno", conf.cell_anno_fn])
-    if conf.cnv_profile_fn is not None:
-        args.extend(["--region", conf.cnv_profile_fn])
+    if conf.merged_cnv_profile_fn is not None:
+        args.extend(["--region", conf.merged_cnv_profile_fn])
     assert_e(plp_conf.umi_dir)
     args.extend(["--UMIdir", plp_conf.umi_dir])
     args.extend(["--cellTAG", plp_conf.cell_tag])
@@ -226,6 +231,10 @@ def pipeline_main(argv):
     stdout.write("[I::%s] check parameters ...\n" % (func, ))
 
     prepare_args(conf)
+
+    stdout.write("[I::%s] merge clone-specific CNV profile ...\n" % (func, ))
+
+    merge_cnv_profile(conf.cnv_profile_fn, conf.merged_cnv_profile_fn, max_gap = 1)
 
     stdout.write("[I::%s] pileup allele-specific UMIs ...\n" % (func, ))
 
