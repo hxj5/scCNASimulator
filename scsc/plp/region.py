@@ -193,9 +193,10 @@ def load_region_from_txt(fn, sep = "\t", verbose = False):
     func = "load_region_from_txt"
     fp = zopen(fn, "rt")
     reg_list = []
+    rs = RegionSet(is_uniq = True)
     nl = 0
     if verbose:
-        stderr.write("[I::%s] start to load regions from file '%s' ...\n" % (func, fn))
+        stdout.write("[I::%s] start to load regions from file '%s' ...\n" % (func, fn))
     for line in fp:
         nl += 1
         parts = line.rstrip().split(sep)
@@ -206,8 +207,16 @@ def load_region_from_txt(fn, sep = "\t", verbose = False):
         chrom, start, end, name = parts[:4]
         start, end = int(start), int(end)
         reg = BlockRegion(chrom, start, end + 1, name)
-        reg_list.append(reg)
+        ret = rs.add(reg)
+        if ret != 0:
+            if verbose:
+                stderr.write("[W::%s] retcode %d for adding region '%s:%s-%s'.\n" % \
+                    (func, ret, chrom, start, end))
     fp.close()
+    reg_list = rs.get_regions()
+    if verbose:
+        stdout.write("[I::%s] %d regions loaded.\n" % (func, len(reg_list)))
+
     return reg_list
 
 
