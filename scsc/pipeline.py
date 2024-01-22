@@ -151,8 +151,8 @@ def usage(fp = stderr, conf = None):
     s += "  --countORPHAN     If use, do not skip anomalous read pairs.\n"
     s += "\n"
     s += "Note:\n"
-    s += "For file format details of '--cellAnno', '--cnvProfile', and '--phasedSNP',\n"
-    s += "please see https://github.com/hxj5/scCNVSimulator/blob/master/docs/manual.rst\n"
+    s += "For file format details of '--cellAnno', '--cnvProfile', and '--phasedSNP', please\n"
+    s += "see https://github.com/hxj5/scCNVSimulator/blob/master/docs/manual.rst\n"
     s += "\n"
 
     fp.write(s)
