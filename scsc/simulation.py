@@ -226,6 +226,10 @@ def simu_core(argv, conf):
         in_sam.close()
         out_sam.close()
 
+        # index the BAM file
+        stdout.write("[I::%s] index the BAM file.\n" % func)
+        pysam.index(conf.out_sam_fn)
+
     except ValueError as e:
         stderr.write("[E::%s] '%s'\n" % (func, str(e)))
         stdout.write("[E::%s] Running program failed.\n" % func)
