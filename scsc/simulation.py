@@ -151,7 +151,7 @@ def simu_cnv(
 
         else:
             allele, reg_id_list = res[:2]
-            if len(reg_id_set) != 1:
+            if len(reg_id_list) != 1:
                 __write_read(read, out_sam, umi, umi_tag)
                 continue
             reg_id = reg_id_list[0]

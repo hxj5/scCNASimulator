@@ -62,7 +62,7 @@ class AlleleUMI:
         state, ale_dat = self.dat[cell][umi]
         if state == 0:
             assert len(ale_dat) == 1
-            allele = ale_dat.keys()[0]
+            allele = list(ale_dat.keys())[0]
             return((allele, list(ale_dat[allele])))
         else:
             return(None)
