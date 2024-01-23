@@ -6,7 +6,7 @@ from ..blib.region import format_chrom
 
 
 class Config:
-    def __ini__(self):
+    def __init__(self):
         self.sam_fn = None
         self.out_dir = None
 

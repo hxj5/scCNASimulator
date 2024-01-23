@@ -7,6 +7,7 @@ import os
 import pysam
 import sys
 from sys import stdout, stderr
+import time
 
 from .app import APP, VERSION
 from .blib.region import format_chrom
@@ -176,55 +177,72 @@ def simu_cnv(
 def simu_core(argv, conf):
     func = "simu_core"
     ret = -1
+    cmdline = "[%s] unexpected command line" % func
 
-    prepare_args(conf)
-    conf.show(stderr)
+    start_time = time.time()
 
-    #
-    stdout.write("[I::%s] load clone annotation.\n" % func)
+    try:
+        time_str = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(start_time))
+        stdout.write("[I::%s] start time: %s.\n" % (func, time_str))
 
-    cell_anno = load_cell_anno(conf.cell_anno_fn)
+        cmdline = " ".join(argv)
+        stdout.write("[I::%s] CMD: %s\n" % (func, cmdline))
+    
+        prepare_args(conf)
+        conf.show(stderr)
+    
+        # load clone annotation.
+        stdout.write("[I::%s] load clone annotation.\n" % func)
+        cell_anno = load_cell_anno(conf.cell_anno_fn)
+    
+        # merge CNV profile.
+        stdout.write("[I::%s] merge CNV profile.\n" % func)
+        merge_cnv_profile(conf.cnv_profile_fn, conf.merged_cnv_profile_fn, 
+                                    max_gap = 1, verbose = True)
+        cnv_profile = load_cnv_profile(conf.merged_cnv_profile_fn, sep = "\t",
+                                    verbose = True)
+    
+        # load allele-specific UMIs.
+        stdout.write("[I::%s] load allele-specific UMIs.\n" % func)
+        fn_list = []
+        for fn in os.listdir(conf.umi_dir):
+            if fn.startswith(conf.umi_fn_prefix) and fn.endswith(conf.umi_fn_suffix):
+                fn_list.append(os.path.join(conf.umi_dir, fn))
+        allele_umi = load_allele_umi(fn_list, verbose = True)
+    
+        # simulate copy number variations.
+        stdout.write("[I::%s] simulate copy number variations.\n" % func)
+        in_sam = pysam.AlignmentFile(conf.sam_fn, "rb")
+        out_sam = pysam.AlignmentFile(conf.out_sam_fn, "wb", template = in_sam)
+        simu_cnv(
+            in_sam = in_sam,
+            out_sam = out_sam,
+            cell_anno = cell_anno,
+            cnv_profile = cnv_profile,
+            allele_umi = allele_umi,
+            cell_tag = conf.cell_tag,
+            umi_tag = conf.umi_tag,
+        )
+        in_sam.close()
+        out_sam.close()
 
-    #
-    stdout.write("[I::%s] merge CNV profile.\n" % func)
+    except ValueError as e:
+        stderr.write("[E::%s] '%s'\n" % (func, str(e)))
+        stdout.write("[E::%s] Running program failed.\n" % func)
+        stdout.write("[E::%s] Quiting ...\n" % func)
+        ret = -1
 
-    merge_cnv_profile(conf.cnv_profile_fn, conf.merged_cnv_profile_fn, 
-                                max_gap = 1, verbose = True)
-    cnv_profile = load_cnv_profile(conf.merged_cnv_profile_fn, sep = "\t",
-                                verbose = True)
+    else:
+        stdout.write("[I::%s] All Done!\n" % func)
+        ret = 0
 
-    #
-    stdout.write("[I::%s] load allele-specific UMIs.\n" % func)
+    finally:
+        stdout.write("[I::%s] CMD: %s\n" % (func, cmdline))
+        end_time = time.time()
+        time_str = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(end_time))
+        stdout.write("[I::%s] end time: %s\n" % (func, time_str))
+        stdout.write("[I::%s] time spent: %.2fs\n" % (func, end_time - start_time))
 
-    fn_list = []
-    for fn in os.listdir(conf.umi_dir):
-        if fn.startswith(conf.umi_fn_prefix) and fn.endswith(conf.umi_fn_suffix):
-            fn_list.append(os.path.join(conf.umi_dir, fn))
-
-    allele_umi = load_allele_umi(fn_list, verbose = True)
-
-    #
-    stdout.write("[I::%s] simulate copy number variations.\n" % func)
-
-    in_sam = pysam.AlignmentFile(conf.sam_fn, "rb")
-    out_sam = pysam.AlignmentFile(conf.out_sam_fn, "wb", template = in_sam)
-
-    simu_cnv(
-        in_sam = in_sam,
-        out_sam = out_sam,
-        cell_anno = cell_anno,
-        cnv_profile = cnv_profile,
-        allele_umi = allele_umi,
-        cell_tag = conf.cell_tag,
-        umi_tag = conf.umi_tag,
-    )
-
-    in_sam.close()
-    out_sam.close()
-
-    stdout.write("[I::%s] All Done!\n" % func)
-
-    ret = 0
     return(ret)
             
 
@@ -237,7 +255,7 @@ def usage(fp = stderr):
     s += "  --sam FILE             Indexed BAM/SAM/CRAM file.\n"
     s += "  --outdir DIR           Output dir.\n"
     s += "  --cellAnno FILE        Cell annotation file, 2 columns.\n"
-    s += "  --cnvProfile FILE      CNV profile file, 6 columns.\n"
+    s += "  --cnvProfile FILE      CNV profile file, 7 columns.\n"
     s += "  --UMIdir DIR           Dir storing gene-specific UMI files.\n"
     s += "  --cellTAG STR          Cell barcode tag.\n"
     s += "  --UMItag STR           UMI tag.\n"
