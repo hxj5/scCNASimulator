@@ -20,7 +20,7 @@ class CNVRegCN(Region):
     @param cn_ale1  Copy Number of the second allele [int]
     """
     def __init__(self, chrom, start, end, name, cn_ale0, cn_ale1):
-        super().__init__(self, chrom, start, end)
+        super().__init__(chrom, start, end)
         self.name = name
         self.cn_ale0 = cn_ale0
         self.cn_ale1 = cn_ale1
@@ -190,7 +190,7 @@ def load_cnv_profile(fn, sep = "\t", verbose = False):
         chrom, start, end, region_id, clone_id, cn_ale0, cn_ale1 = items[:7]
         start, end = format_start(start), format_end(end)
         cn_ale0, cn_ale1 = int(cn_ale0), int(cn_ale1)
-        dat.add_cnv(chrom, start, end, region_id, cn_ale0, cn_ale1, clone_id)
+        dat.add_cnv(chrom, start, end + 1, region_id, cn_ale0, cn_ale1, clone_id)
     fp.close()
     return(dat)
 
