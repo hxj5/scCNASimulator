@@ -4,7 +4,7 @@
 
 from sys import stdout, stderr
 
-from ..blib.region import Region, RegionSet
+from ..blib.region import Region, RegionSet, format_start, format_end
 from ..blib.zfile import zopen
 
 
@@ -205,7 +205,7 @@ def load_region_from_txt(fn, sep = "\t", verbose = False):
                 stderr.write("[E::%s] too few columns of line %d.\n" % (func, nl))
             return None           
         chrom, start, end, name = parts[:4]
-        start, end = int(start), int(end)
+        start, end = format_start(start), format_end(end)
         reg = BlockRegion(chrom, start, end + 1, name)
         ret = rs.add(reg)
         if ret != 0:

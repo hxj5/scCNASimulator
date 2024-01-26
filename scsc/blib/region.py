@@ -23,6 +23,12 @@ class RegPos(int):
         else:
             return("%d" % int(self))
 
+    def __add__(self, x):
+        if self > REG_MAX_POS - x:
+            return(REG_MAX_POS)
+        else:
+            return(self + x)
+
 
 class Region:
     """Region class
