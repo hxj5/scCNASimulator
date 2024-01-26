@@ -7,12 +7,12 @@ import sys
 from sys import stdout, stderr
 
 from .app import APP
+from .blib.assert import assert_e, assert_n
 from .pileup import pileup_main
 from .plp.config import Config as PlpConfig
 from .simu.cnv import merge_cnv_profile
 from .simu.config import Config as SimuConfig
 from .simulation import simu_main
-from .utils import assert_e, assert_n
 
 
 class Config:

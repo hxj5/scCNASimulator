@@ -1,4 +1,4 @@
-# utils.py - utils
+# assert.py - simple wrapper for python assert
 
 
 import os
