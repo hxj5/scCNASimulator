@@ -71,8 +71,9 @@ def simu_cnv(
     func = "simu_cnv"
 
     clone = None
-    flag = -1
-    cn = None      # copy number
+    cn = None           # copy number
+    amb_umi = {}        # ambiguous UMIs that have been processed
+
     for read in in_sam.fetch():
         if not read.has_tag(umi_tag):
             __write_read(read, out_sam, None, umi_tag)
@@ -107,37 +108,45 @@ def simu_cnv(
             # Note:
             # Currently fork or deletion in read level is not perfect
             # as it should be done in UMI level.
-            # For example, one UMI may overlap with the copy gain regions, 
-            # hence all its reads should be forked, while in current scheme,
-            # reads of the UMI that do not overlap CNV regions will not be
-            # forked.
-            # This should have little influence on the CNV simulation, as the
-            # number of these reads should be very small considering the length
-            # of CNV regions and UMIs.
-        
-            chrom = read.reference_name
-            if not chrom:
-                __write_read(read, out_sam, umi, umi_tag)
-                continue
-            positions = read.get_reference_positions()        # 0-based
-            if not positions:
-                __write_read(read, out_sam, umi, umi_tag)
-                continue
-            start, end = positions[0] + 1, positions[-1] + 1  # 1-based
+            # For example, one UMI may overlap with the copy loss regions, 
+            # and all its reads are selected to be discarded, 
+            # while in current scheme, reads of the UMI that do not overlap 
+            # CNV regions will not be discarded, 
+            # hence this UMI is unexpectedly kept in the output BAM file.
+            # This should have little influence on the CNV simulation, 
+            # as the number of these reads should be very small considering 
+            # the length of CNV regions and UMIs.
 
-            ret, cn_ale = cnv_profile.fetch(chrom, start, end + 1, clone)
-            if ret < 0:
-                raise ValueError
-            if ret != 0:           # not in CNV region or overlap multiple CNV regions with distinct CNV profiles.
-                __write_read(read, out_sam, umi, umi_tag)
-                continue
-            cn0, cn1 = cn_ale[:2]
-
-            rand_f = np.random.rand()
-            if rand_f < 0.5:
-                cn = cn0
+            if cell in amb_umi and umi in amb_umi[cell]:    # already processed the UMI
+                cn = amb_umi[cell][umi]
             else:
-                cn = cn1
+                chrom = read.reference_name
+                if not chrom:
+                    __write_read(read, out_sam, umi, umi_tag)
+                    continue
+                positions = read.get_reference_positions()        # 0-based
+                if not positions:
+                    __write_read(read, out_sam, umi, umi_tag)
+                    continue
+                start, end = positions[0] + 1, positions[-1] + 1  # 1-based
+
+                ret, cn_ale = cnv_profile.fetch(chrom, start, end + 1, clone)
+                if ret < 0:
+                    raise ValueError
+                if ret != 0:           # not in CNV region or overlap multiple CNV regions with distinct CNV profiles.
+                    __write_read(read, out_sam, umi, umi_tag)
+                    continue
+                cn0, cn1 = cn_ale[:2]
+
+                rand_f = np.random.rand()
+                if rand_f < 0.5:
+                    cn = cn0
+                else:
+                    cn = cn1
+
+                if cell not in amb_umi:
+                    amb_umi[cell] = {}
+                amb_umi[cell][umi] = cn     # as umi not in amb_umi[cell]
 
             if cn <= 0:
                 continue
