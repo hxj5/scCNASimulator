@@ -27,7 +27,7 @@ class RegPos(int):
         if self > REG_MAX_POS - x:
             return(REG_MAX_POS)
         else:
-            return(self + x)
+            return(int(self) + x)
 
 
 class Region:
