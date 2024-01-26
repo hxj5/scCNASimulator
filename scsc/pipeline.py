@@ -7,7 +7,7 @@ import sys
 from sys import stdout, stderr
 
 from .app import APP
-from .blib.assert import assert_e, assert_n
+from .blib.w_assert import assert_e, assert_n
 from .pileup import pileup_main
 from .plp.config import Config as PlpConfig
 from .simu.cnv import merge_cnv_profile

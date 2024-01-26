@@ -1,4 +1,4 @@
-# assert.py - simple wrapper for python assert
+# w_assert.py - simple wrapper for python assert
 
 
 import os
