@@ -74,7 +74,13 @@ The corresponding phased genotype could be delimited by either ``'/'`` or
 .. note::
    As reference phasing, e.g., with Eagle2, is not perfect, one UMI may 
    cover two SNPs with conflicting haplotype states.
-
+   Additionally, reference phasing tends to have higher rate in longer 
+   distance.
+   Therefore, further local phasing (e.g., in gene level) and global phasing
+   (e.g., in bin level) could be used to reduce error rate, e.g., with the
+   3-step phasing used by CHISEL_ in scDNA-seq data and XClone_ in scRNA-seq
+   data.
+   
 
 Clone-specific CNV profile
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -200,4 +206,8 @@ An example is as follows:
    AAAAACGTACGTAAAA-1   chr1:1000-28000 AGGTACGTACGT    1
    AAAAACGTACGTAAAA-1   chr18   ACGTAGGTACGT    0
    AAAAACGTACGTAAAA-1   chr18   ACGTATGTACGT    0
+
+
+.. _CHISEL: https://www.nature.com/articles/s41587-020-0661-6
+.. _XClone: https://www.biorxiv.org/content/10.1101/2023.04.03.535352v2
 
