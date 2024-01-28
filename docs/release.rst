@@ -8,6 +8,7 @@ Release v0.0.1 (27/01/2024)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Implement the three modules ``pileup``, ``simu``, and ``pipeline`` for 
 CNV simulation in 10x scRNA-seq data.
+
 * the ``pileup`` module pileups allele-specific UMIs in each single cell.
 * the ``simu`` module simulates CNVs by forking or discarding UMIs (both the
   allele-specific and ambiguous UMIs) based on the given a clone-specific 
@@ -16,6 +17,7 @@ CNV simulation in 10x scRNA-seq data.
   and ``simu`` modules.
 
 Note the simulation of this version has following features:
+
 * it requires clone-specific and allele-specific CNV profiles as input.
 * it assumes the copy numbers of target CNV regions are both 1 for two 
   alleles, hence the simulation is recommended to be performed on normal or
