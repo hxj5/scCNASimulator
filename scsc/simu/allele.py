@@ -32,13 +32,13 @@ class AlleleUMI:
 
         if n_ale == 0:
             assert self.dat[cell][umi][0] == 0
-            ale_dat[allele] = set(reg_id)
+            ale_dat[allele] = set([reg_id])
         elif n_ale == 1:
             assert self.dat[cell][umi][0] == 0
             if allele in ale_dat:
                 ale_dat[allele].add(reg_id)
             else:     # UMI aligned to both alleles
-                ale_dat[allele] = set(reg_id)
+                ale_dat[allele] = set([reg_id])
                 self.dat[cell][umi][0] = 1
         else:
             assert self.dat[cell][umi][0] == 1
