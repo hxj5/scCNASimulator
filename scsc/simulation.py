@@ -124,7 +124,7 @@ def simu_core(argv, conf):
     return(ret)
             
 
-def usage(fp = stderr):
+def usage(fp = stderr, conf = None):
     s =  "\n" 
     s += "Version: %s\n" % (VERSION, )
     s += "Usage: %s %s <options>\n" % (APP, COMMAND)
@@ -135,8 +135,9 @@ def usage(fp = stderr):
     s += "  --cellAnno FILE        Cell annotation file, 2 columns.\n"
     s += "  --cnvProfile FILE      CNV profile file, 7 columns.\n"
     s += "  --UMIdir DIR           Dir storing gene-specific UMI files.\n"
-    s += "  --cellTAG STR          Cell barcode tag.\n"
-    s += "  --UMItag STR           UMI tag.\n"
+    s += "  --cellTAG STR          Cell barcode tag [%s]\n" % conf.CELL_TAG
+    s += "  --UMItag STR           UMI tag [%s]\n" % conf.UMI_TAG
+    s += "  --debug INT            Debug level, only for developer [%d]\n" % conf.DEBUG
     s += "  --version              Print version and exit.\n"
     s += "  --help                 Print this message and exit.\n"
     s += "\n"
@@ -147,12 +148,12 @@ def usage(fp = stderr):
 def simu_main(argv, conf = None):
     func = "simu_main"
 
-    if len(argv) <= 2:
-        usage(stderr)
-        sys.exit(1)
-
     if conf is None:
         conf = Config()
+
+    if len(argv) <= 2:
+        usage(stderr, conf.defaults)
+        sys.exit(1)
 
     opts, args = getopt.getopt(argv[2:], "", [
         "sam=",
@@ -160,6 +161,7 @@ def simu_main(argv, conf = None):
         "cellAnno=", "cnvProfile=",
         "UMIdir=",
         "cellTAG=", "UMItag=",
+        "debug=",
         "version", "help"
     ])
 
@@ -173,6 +175,7 @@ def simu_main(argv, conf = None):
         elif op in ("--umidir"): conf.umi_dir = val
         elif op in ("--celltag"): conf.cell_tag = val
         elif op in ("--umitag"): conf.umi_tag = val
+        elif op in ("--debug"): conf.debug = int(val)
         elif op in ("--version"): stderr.write("%s\n" % VERSION); sys.exit(1)
         elif op in ("--help"): usage(); sys.exit(1)
         else:

@@ -117,7 +117,7 @@ def prepare_config(conf):
             if conf.barcodes is None:
                 conf.umi_tag = None
             else:
-                conf.umi_tag = conf.defaults.PLP_UMI_TAG_BC
+                conf.umi_tag = conf.defaults.UMI_TAG_BC
         elif conf.umi_tag.upper() == "NONE":
             conf.umi_tag = None
     else:
@@ -130,9 +130,9 @@ def prepare_config(conf):
 
     if conf.excl_flag < 0:
         if conf.use_umi():
-            conf.excl_flag = conf.defaults.PLP_EXCL_FLAG_UMI
+            conf.excl_flag = conf.defaults.EXCL_FLAG_UMI
         else:
-            conf.excl_flag = conf.defaults.PLP_EXCL_FLAG_XUMI
+            conf.excl_flag = conf.defaults.EXCL_FLAG_XUMI
 
     return(0)
 
@@ -347,23 +347,23 @@ def usage(fp = stderr, conf = None):
     s += "  -P, --phasedSNP FILE   A TSV or VCF file listing phased SNPs (i.e., containing phased GT).\n"
     s += "  -b, --barcode FILE     A plain file listing all effective cell barcode.\n"
     s += "  -h, --help             Print this message and exit.\n"
-    s += "  -D, --debug INT        Used by developer for debugging [%d]\n" % conf.PLP_DEBUG
+    s += "  -D, --debug INT        Used by developer for debugging [%d]\n" % conf.DEBUG
     s += "\n"
     s += "Optional arguments:\n"
-    s += "  -p, --nproc INT        Number of processes [%d]\n" % conf.PLP_NPROC
-    s += "  --cellTAG STR          Tag for cell barcodes [%s]\n" % conf.PLP_CELL_TAG
-    s += "  --UMItag STR           Tag for UMI, set to None when reads only [%s]\n" % conf.PLP_UMI_TAG
-    s += "  --minCOUNT INT         Mininum aggragated count for SNP [%d]\n" % conf.PLP_MIN_COUNT
-    s += "  --minMAF FLOAT         Mininum minor allele fraction for SNP [%f]\n" % conf.PLP_MIN_MAF
+    s += "  -p, --nproc INT        Number of processes [%d]\n" % conf.NPROC
+    s += "  --cellTAG STR          Tag for cell barcodes [%s]\n" % conf.CELL_TAG
+    s += "  --UMItag STR           Tag for UMI, set to None when reads only [%s]\n" % conf.UMI_TAG
+    s += "  --minCOUNT INT         Mininum aggragated count for SNP [%d]\n" % conf.MIN_COUNT
+    s += "  --minMAF FLOAT         Mininum minor allele fraction for SNP [%f]\n" % conf.MIN_MAF
     s += "  --outputAllReg         If set, output all inputted regions.\n"
     s += "  --countDupHap          If set, UMIs aligned to both haplotypes will be counted.\n"
     s += "\n"
     s += "Read filtering:\n"
-    s += "  --inclFLAG INT    Required flags: skip reads with all mask bits unset [%d]\n" % conf.PLP_INCL_FLAG
-    s += "  --exclFLAG INT    Filter flags: skip reads with any mask bits set [%d\n" % conf.PLP_EXCL_FLAG_UMI
-    s += "                    (when use UMI) or %d (otherwise)]\n" % conf.PLP_EXCL_FLAG_XUMI
-    s += "  --minLEN INT      Minimum mapped length for read filtering [%d]\n" % conf.PLP_MIN_LEN
-    s += "  --minMAPQ INT     Minimum MAPQ for read filtering [%d]\n" % conf.PLP_MIN_MAPQ
+    s += "  --inclFLAG INT    Required flags: skip reads with all mask bits unset [%d]\n" % conf.INCL_FLAG
+    s += "  --exclFLAG INT    Filter flags: skip reads with any mask bits set [%d\n" % conf.EXCL_FLAG_UMI
+    s += "                    (when use UMI) or %d (otherwise)]\n" % conf.EXCL_FLAG_XUMI
+    s += "  --minLEN INT      Minimum mapped length for read filtering [%d]\n" % conf.MIN_LEN
+    s += "  --minMAPQ INT     Minimum MAPQ for read filtering [%d]\n" % conf.MIN_MAPQ
     s += "  --countORPHAN     If use, do not skip anomalous read pairs.\n"
     s += "\n"
 

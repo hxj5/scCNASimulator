@@ -134,7 +134,7 @@ def conf2simu_argv(conf, plp_conf):
     return(args)
 
 
-def usage(fp = stderr, conf = None):
+def usage(fp = stderr, plp_conf = None, simu_conf = None):
     s =  "\n" 
     s += "Usage: %s %s <options>\n" % (APP, COMMAND)  
     s += "\n" 
@@ -146,21 +146,21 @@ def usage(fp = stderr, conf = None):
     s += "  -P, --phasedSNP FILE   A TSV or VCF file listing phased SNPs (i.e., containing phased GT).\n"
     s += "  -b, --barcode FILE     A plain file listing all effective cell barcode.\n"
     s += "  -h, --help             Print this message and exit.\n"
-    s += "  -D, --debug INT        Used by developer for debugging [%d]\n" % conf.PLP_DEBUG
+    s += "  -D, --debug INT        Used by developer for debugging [%d]\n" % plp_conf.DEBUG
     s += "\n"
     s += "Optional arguments:\n"
-    s += "  -p, --nproc INT        Number of processes [%d]\n" % conf.PLP_NPROC
-    s += "  --cellTAG STR          Tag for cell barcodes [%s]\n" % conf.PLP_CELL_TAG
-    s += "  --UMItag STR           Tag for UMI, set to None when reads only [%s]\n" % conf.PLP_UMI_TAG
-    s += "  --minCOUNT INT         Mininum aggragated count for SNP [%d]\n" % conf.PLP_MIN_COUNT
-    s += "  --minMAF FLOAT         Mininum minor allele fraction for SNP [%f]\n" % conf.PLP_MIN_MAF
+    s += "  -p, --nproc INT        Number of processes [%d]\n" % plp_conf.NPROC
+    s += "  --cellTAG STR          Tag for cell barcodes [%s]\n" % plp_conf.CELL_TAG
+    s += "  --UMItag STR           Tag for UMI, set to None when reads only [%s]\n" % plp_conf.UMI_TAG
+    s += "  --minCOUNT INT         Mininum aggragated count for SNP [%d]\n" % plp_conf.MIN_COUNT
+    s += "  --minMAF FLOAT         Mininum minor allele fraction for SNP [%f]\n" % plp_conf.MIN_MAF
     s += "\n"
     s += "Read filtering:\n"
-    s += "  --inclFLAG INT    Required flags: skip reads with all mask bits unset [%d]\n" % conf.PLP_INCL_FLAG
-    s += "  --exclFLAG INT    Filter flags: skip reads with any mask bits set [%d\n" % conf.PLP_EXCL_FLAG_UMI
-    s += "                    (when use UMI) or %d (otherwise)]\n" % conf.PLP_EXCL_FLAG_XUMI
-    s += "  --minLEN INT      Minimum mapped length for read filtering [%d]\n" % conf.PLP_MIN_LEN
-    s += "  --minMAPQ INT     Minimum MAPQ for read filtering [%d]\n" % conf.PLP_MIN_MAPQ
+    s += "  --inclFLAG INT    Required flags: skip reads with all mask bits unset [%d]\n" % plp_conf.INCL_FLAG
+    s += "  --exclFLAG INT    Filter flags: skip reads with any mask bits set [%d\n" % plp_conf.EXCL_FLAG_UMI
+    s += "                    (when use UMI) or %d (otherwise)]\n" % plp_conf.EXCL_FLAG_XUMI
+    s += "  --minLEN INT      Minimum mapped length for read filtering [%d]\n" % plp_conf.MIN_LEN
+    s += "  --minMAPQ INT     Minimum MAPQ for read filtering [%d]\n" % plp_conf.MIN_MAPQ
     s += "  --countORPHAN     If use, do not skip anomalous read pairs.\n"
     s += "\n"
     s += "Note:\n"
@@ -178,14 +178,14 @@ def pipeline_main(argv):
     """
     func = "pipeline_main"
 
+    conf = Config()
     plp_conf = PlpConfig()
+    simu_conf = SimuConfig()
 
     if len(argv) <= 2:
-        usage(stderr, plp_conf.defaults)
+        usage(stderr, plp_conf.defaults, simu_conf.defaults)
         sys.exit(1)
 
-    conf = Config()
-    simu_conf = SimuConfig()
 
     stdout.write("[I::%s] start ...\n" % (func, ))
 
@@ -209,7 +209,7 @@ def pipeline_main(argv):
         elif op in (      "--cnvprofile"): conf.cnv_profile_fn = val
         elif op in ("-P", "--phasedsnp"): conf.snp_fn = val
         elif op in ("-b", "--barcode"): conf.barcode_fn = val
-        elif op in ("-h", "--help"): usage(stderr, plp_conf.defaults); sys.exit(1)
+        elif op in ("-h", "--help"): usage(stderr, plp_conf.defaults, simu_conf.defaults); sys.exit(1)
         elif op in ("-D", "--debug"): conf.debug = int(val)
 
         elif op in ("-p", "--nproc"): conf.nproc = int(val)

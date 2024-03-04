@@ -7,6 +7,8 @@ from ..blib.region import format_chrom
 
 class Config:
     def __init__(self):
+        self.defaults = DefaultConfig()
+
         self.sam_fn = None
         self.out_dir = None
 
@@ -14,8 +16,10 @@ class Config:
         self.cnv_profile_fn = None
         self.umi_dir = None
 
-        self.cell_tag = None
-        self.umi_tag = None
+        self.cell_tag = self.defaults.CELL_TAG
+        self.umi_tag = self.defaults.UMI_TAG
+
+        self.debug = self.defaults.DEBUG
 
         self.merged_cnv_profile_fn = None
 
@@ -38,6 +42,7 @@ class Config:
         s += "%sumi_dir = %s\n" % (prefix, self.umi_dir)
         s += "%scell_tag = %s\n" % (prefix, self.cell_tag)
         s += "%sumi_tag = %s\n" % (prefix, self.umi_tag)
+        s += "%sdebug = %d\n" % (prefix, self.debug)
         s += "%s\n" % prefix
 
         s += "%smerged_cnv_profile_fn = %s\n" % (prefix, self.merged_cnv_profile_fn)
@@ -50,4 +55,12 @@ class Config:
         s += "%s\n" % prefix
 
         fp.write(s)
+
+
+class DefaultConfig:
+    def __init__(self):
+        self.DEBUG = 0
+        self.CELL_TAG = "CB"
+        self.UMI_TAG = "UB"
+        self.UMI_TAG_BC = "UB"    # the default umi tag for 10x data.
 
