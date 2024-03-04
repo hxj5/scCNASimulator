@@ -81,6 +81,9 @@ def load_allele_umi(fn_list, verbose = False):
         for line in fp:
             items = line.strip().split("\t")
             cell, reg_id, umi, ale_idx = items[:4]
+            cell = cell.strip('"')
+            reg_id = reg_id.strip('"')
+            umi = umi.strip('"')
             ale_idx = int(ale_idx)
             ret = au.add(cell, reg_id, umi, ale_idx)
             if ret != 0:

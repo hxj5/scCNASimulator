@@ -151,6 +151,10 @@ class CloneCNVProfile:
             dat_list["cn_ale1"].extend(cp_dat["cn_ale1"])
         return(dat_list)
 
+    def get_clones(self):
+        clones = sorted([c for c in self.dat.keys()])
+        return(clones)
+
     def query(self, name, clone_id):
         """Query CNV profile for the given region and clone.
         @param name       The ID of the CNV region [str]
@@ -190,6 +194,8 @@ def load_cnv_profile(fn, sep = "\t", verbose = False):
         chrom, start, end, region_id, clone_id, cn_ale0, cn_ale1 = items[:7]
         start, end = format_start(start), format_end(end)
         cn_ale0, cn_ale1 = int(cn_ale0), int(cn_ale1)
+        region_id = region_id.strip('"')
+        clone_id = clone_id.strip('"')
         dat.add_cnv(chrom, start, end + 1, region_id, cn_ale0, cn_ale1, clone_id)
     fp.close()
     return(dat)
@@ -243,6 +249,8 @@ def merge_cnv_profile(in_fn, out_fn, max_gap = 1, verbose = False):
         chrom, start, end, region_id, clone_id, cn_ale0, cn_ale1 = items[:7]
         start, end = format_start(start), format_end(end)
         cn_ale0, cn_ale1 = int(cn_ale0), int(cn_ale1)
+        region_id = region_id.strip('"')
+        clone_id = clone_id.strip('"')
         if clone_id not in dat:
             dat[clone_id] = {}
         if chrom not in dat[clone_id]:

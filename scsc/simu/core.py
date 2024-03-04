@@ -149,6 +149,9 @@ def simu_cnv(
 ):
     func = "simu_cnv"
 
+    cnv_clones = cnv_profile.get_clones()
+    cnv_clones = set(cnv_clones)
+
     clone = None
     cn = None           # copy number
     uc = UMICount()
@@ -169,10 +172,13 @@ def simu_cnv(
             continue
         qname = read.query_name
 
-        if cell not in cell_anno:    # cell not in CNV clone.
+        if cell not in cell_anno:    
             __write_read(read, out_sam, umi, umi_tag)
             continue
         clone = cell_anno[cell]
+        if clone not in cnv_clones:    # cell not in CNV clone.
+            __write_read(read, out_sam, umi, umi_tag)
+            continue
 
         # Note:
         # Currently fork or deletion in read level is not perfect
