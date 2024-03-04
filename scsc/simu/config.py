@@ -23,6 +23,7 @@ class Config:
         self.umi_fn_suffix = ".tsv"
 
         self.out_sam_fn = None
+        self.out_umi_stat_fn = None
 
 
     def show(self, fp = None, prefix = ""):
@@ -43,6 +44,7 @@ class Config:
         s += "%sumi_fn_prefix = %s\n" % (prefix, self.umi_fn_prefix)
         s += "%sumi_fn_suffix = %s\n" % (prefix, self.umi_fn_suffix)
         s += "%sout_sam_file = %s\n" % (prefix, self.out_sam_fn)
+        s += "%sout_umi_stat_file = %s\n" % (prefix, self.out_umi_stat_fn)
         s += "%s\n" % prefix
 
         s += "%s\n" % prefix

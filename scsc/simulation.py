@@ -34,6 +34,7 @@ def prepare_args(conf):
 
     conf.merged_cnv_profile_fn = os.path.join(conf.out_dir, "merged.cnv_profile.tsv")
     conf.out_sam_fn = os.path.join(conf.out_dir, "out.bam")
+    conf.out_umi_stat_fn = os.path.join(conf.out_dir, "cnv_umi_stat.tsv")
 
 
 def simu_core(argv, conf):
@@ -76,7 +77,7 @@ def simu_core(argv, conf):
         stdout.write("[I::%s] simulate copy number variations.\n" % func)
         in_sam = pysam.AlignmentFile(conf.sam_fn, "rb")
         out_sam = pysam.AlignmentFile(conf.out_sam_fn, "wb", template = in_sam)
-        simu_cnv(
+        umi_stat = simu_cnv(
             in_sam = in_sam,
             out_sam = out_sam,
             cell_anno = cell_anno,
@@ -91,6 +92,17 @@ def simu_core(argv, conf):
         # index the BAM file
         stdout.write("[I::%s] index the BAM file.\n" % func)
         pysam.index(conf.out_sam_fn)
+
+        # output UMI stat
+        fp = open(conf.out_umi_stat_fn, "w")
+        s_keys = ("A0", "A0_amp", "A0_del", "A1", "A1_amp", "A1_del", 
+                "AMB", "AMB_amp", "AMB_del", "invalid")
+        s = "\t".join(s_keys) + "\n"
+        fp.write(s)
+        for cell, c_dat in umi_stat.items():
+            s = "\t".join([str(c_dat[k]) for k in s_keys]) + "\n"
+            fp.write(s)
+        fp.close()
 
     except ValueError as e:
         stderr.write("[E::%s] '%s'\n" % (func, str(e)))
