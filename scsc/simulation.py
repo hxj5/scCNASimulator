@@ -57,7 +57,7 @@ def simu_core(argv, conf):
         # load clone annotation.
         stdout.write("[I::%s] load clone annotation.\n" % func)
         cell_anno = load_cell_anno(conf.cell_anno_fn)
-    
+
         # merge CNV profile.
         stdout.write("[I::%s] merge CNV profile.\n" % func)
         merge_cnv_profile(conf.cnv_profile_fn, conf.merged_cnv_profile_fn, 
@@ -85,6 +85,7 @@ def simu_core(argv, conf):
             allele_umi = allele_umi,
             cell_tag = conf.cell_tag,
             umi_tag = conf.umi_tag,
+            debug = conf.debug
         )
         in_sam.close()
         out_sam.close()
@@ -94,14 +95,26 @@ def simu_core(argv, conf):
         pysam.index(conf.out_sam_fn)
 
         # output UMI stat
+        stdout.write("[I::%s] output UMI statistics.\n" % func)
         fp = open(conf.out_umi_stat_fn, "w")
-        s_keys = ("A0", "A0_amp", "A0_del", "A1", "A1_amp", "A1_del", 
-                "AMB", "AMB_amp", "AMB_del", "invalid")
+        s_keys = ("cell", "clone", "region",
+                    "A0", "A0_amp", "A0_del",
+                    "A1", "A1_amp", "A1_del", 
+                    "AMB", "AMB_amp", "AMB_del", 
+                    "invalid", "unknown")
         s = "\t".join(s_keys) + "\n"
         fp.write(s)
         for cell, c_dat in umi_stat.items():
-            s = "\t".join([str(c_dat[k]) for k in s_keys]) + "\n"
-            fp.write(s)
+            clone = cell_anno[cell]
+            for region, r_dat in c_dat.items():
+                s = "\t".join([
+                    cell, clone, region,
+                    str(r_dat["A0"]), str(r_dat["A0_amp"]), str(r_dat["A0_del"]),
+                    str(r_dat["A1"]), str(r_dat["A1_amp"]), str(r_dat["A1_del"]),
+                    str(r_dat["AMB"]), str(r_dat["AMB_amp"]), str(r_dat["AMB_del"]),
+                    str(r_dat["invalid"]), str(r_dat["unknown"])
+                ]) + "\n"
+                fp.write(s)
         fp.close()
 
     except ValueError as e:

@@ -20,7 +20,7 @@ class CNVRegCN(Region):
     @param cn_ale1  Copy Number of the second allele [int]
     """
     def __init__(self, chrom, start, end, name, cn_ale0, cn_ale1):
-        super().__init__(chrom, start, end)
+        super().__init__(chrom, start, end, name)
         self.name = name
         self.cn_ale0 = cn_ale0
         self.cn_ale1 = cn_ale1
@@ -50,22 +50,14 @@ class CNVProfile:
         @param start    1-based start pos, inclusive [int]
         @param end      1-based end pos, exclusive [int]
         @return         A tuple of two elements:
-                        ret: return code [int]
-                          -1, error;
-                          0, overlap with only 1 region;
-                          1, overlap with zero or more than 1 regions.
-                        profile: a tuple of copy numbers for the first and 
-                          second alleles [tuple<int, int>]
-                          None if zero or more than 1 hits.
+                        n: number of overlapping regions, -1 if error [int]
+                        profile: a list of tuples of copy numbers for the two 
+                          alleles and region ID [tuple<int, int, string>]
+                          None if error.
         """
         hits = self.rs.fetch(chrom, start, end)
-        if not hits:
-            return((1, None))
-        elif len(hits) == 1:
-            reg = hits[0]
-            return((0, (reg.cn_ale0, reg.cn_ale1)))
-        else:
-            return((1, None))
+        res = [(reg.cn_ale0, reg.cn_ale1, reg.name) for reg in hits]
+        return((len(res), res))
 
     def get_all(self):
         reg_list = self.rs.get_regions(sort = True)
@@ -93,13 +85,9 @@ class CNVProfile:
         @return           see @return of @func CNVProfile::fetch()
         """
         hits = self.rs.query(name)
-        if not hits:
-            return((1, None))
-        elif len(hits) == 1:
-            reg = hits[0]
-            return((0, (reg.cn_ale0, reg.cn_ale1)))
-        else:
-            return((1, None))
+        res = [(reg.cn_ale0, reg.cn_ale1, reg.name) for reg in hits]
+        return((len(res), res))
+
 
 class CloneCNVProfile:
     def __init__(self):
@@ -118,15 +106,14 @@ class CloneCNVProfile:
         @param start      1-based start pos, inclusive [int]
         @param end        1-based end pos, exclusive [int]
         @param clone_id   The ID of the CNV clone [str]
-        @return         see @return of @func CNVProfile::fetch()
-                        ret: 11 if clone_id is invalid;
+        @return           See @return of @func CNVProfile::fetch()
         """
         if clone_id in self.dat:
             cp = self.dat[clone_id]    # cnv profile
             ret, hits = cp.fetch(chrom, start, end)
             return((ret, hits))
         else:
-            return((11, None))
+            return((0, []))
 
     def get_all(self):
         dat_list = {
@@ -159,14 +146,14 @@ class CloneCNVProfile:
         """Query CNV profile for the given region and clone.
         @param name       The ID of the CNV region [str]
         @param clone_id   The ID of the CNV clone [str]
-        @return         see @return of @func CNVProfile::fetch()
+        @return           See @return of @func CNVProfile::fetch()
         """
         if clone_id in self.dat:
             cp = self.dat[clone_id]    # cnv profile
-            ret, hits = cp.fetch(chrom, start, end)
+            ret, hits = cp.query(name)
             return((ret, hits))
         else:
-            return((11, None))
+            return((0, []))
 
 
 def load_cnv_profile(fn, sep = "\t", verbose = False):

@@ -122,6 +122,8 @@ def conf2simu_argv(conf, plp_conf):
         args.extend(["--cellAnno", conf.cell_anno_fn])
     if conf.merged_cnv_profile_fn is not None:
         args.extend(["--cnvProfile", conf.merged_cnv_profile_fn])
+    if conf.debug is not None:
+        args.extend(["--debug", conf.debug])
     assert_e(plp_conf.umi_dir)
     args.extend(["--UMIdir", plp_conf.umi_dir])
     args.extend(["--cellTAG", plp_conf.cell_tag])
