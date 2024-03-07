@@ -253,20 +253,8 @@ def simu_cnv(
 
         # check whether the read has allele information.
         rec_allele = uc.get_allele(cell, umi)
-
-        if debug:
-            if cell == "GATGAAAAGTGTGAAT-1" and umi in ("CCAGGACTTT", "TAGTTTGATG"):
-                stderr.write("[D::%s] rec_allele:'%s' ('%s'-'%s').\n" % \
-                    (func, rec_allele, cell, umi))
-
         if rec_allele is None:
             res = allele_umi.query(cell, umi)
-
-            if debug:
-                if cell == "GATGAAAAGTGTGAAT-1" and umi in ("CCAGGACTTT", "TAGTTTGATG"):
-                    stderr.write("[D::%s] res:'%s' ('%s'-'%s').\n" % \
-                        (func, str(res), cell, umi))
-
             if res is None:     # no allele info; region info to be checked.
                 chrom = read.reference_name
                 if not chrom:
@@ -304,12 +292,6 @@ def simu_cnv(
 
             else:               # UMI has allele info and overlaps CNV regions.
                 allele, reg_id_list = res[:2]
-
-                if debug:
-                    if cell == "GATGAAAAGTGTGAAT-1" and umi in ("CCAGGACTTT", "TAGTTTGATG"):
-                        stderr.write("[D::%s] allele:'%s' ('%s'-'%s').\n" % \
-                            (func, allele, cell, umi))
-
                 if len(reg_id_list) == 1:
                     if allele not in (0, 1):
                         raise ValueError("[E::%s] allele '%s' should be 0 or 1 ('%s'-'%s')." % \
@@ -320,26 +302,7 @@ def simu_cnv(
                     continue
                 reg_id = reg_id_list[0]
 
-                if debug:
-                    if cell == "GATGAAAAGTGTGAAT-1" and umi in ("CCAGGACTTT", "TAGTTTGATG"):
-                        stderr.write("[D::%s] region:'%s'; clone:'%s' ('%s'-'%s').\n" % \
-                            (func, reg_id, clone, cell, umi))
-        
                 n, profile = cnv_profile.query(reg_id, clone)
-
-                if debug:
-                    if cell == "GATGAAAAGTGTGAAT-1" and umi in ("CCAGGACTTT", "TAGTTTGATG"):
-                        stderr.write("[D::%s] n:'%s'; profile:'%s' ('%s'-'%s').\n" % \
-                            (func, n, str(profile), cell, umi))
-
-                if debug:
-                    if cell == "GATGAAAAGTGTGAAT-1" and umi in ("CCAGGACTTT", "TAGTTTGATG"):
-                        stderr.write("[D::%s] cnv_profile.clones='%s'.\n" % \
-                            (func, str(cnv_profile.dat.keys())))
-                        cp = cnv_profile.dat["immune_cnv_clone_1"]
-                        stderr.write("[D::%s] rs.cid='%s'.\n" % \
-                            (func, str(cp.rs.cid.keys())))
-
                 if n < 0:
                     raise ValueError("[E::%s] CNVProfile query failed for ambiguous UMIs ('%s'-'%s')." % \
                         (func, cell, umi))
@@ -353,11 +316,6 @@ def simu_cnv(
                     __write_read(read, out_sam, umi, umi_tag)
                     continue
 
-                if debug:
-                    if cell == "GATGAAAAGTGTGAAT-1" and umi in ("CCAGGACTTT", "TAGTTTGATG"):
-                        stderr.write("[D::%s] allele2:'%s' ('%s'-'%s').\n" % \
-                            (func, allele, cell, umi))
-                
                 if allele == 0:
                     uc.set_allele_a0(cell, umi)
                     uc.set_copy_number(cell, umi, cn0)
