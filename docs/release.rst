@@ -3,6 +3,21 @@
    History
    =======
 
+Release v0.0.2 (07/03/2024)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Bug fix:
+* simu: no allele-specific UMIs extracted. It is because (1) the region IDs
+  are not properly loaded into ``set()``; (2) the region IDs are not used by
+  ``CNVRegCN`` as region names, hence the allele information cannot be 
+  extracted by ``query()`` functions.
+
+Feature enhancement:
+* simu: add ``UMICount`` to count the processed allele-specific UMIs in each
+  clonal CNV region.
+* simu: add a ``--debug`` option.
+* simu: remove the leading and tailing ``"`` when loading the region IDs and
+  clone IDs.
+
 
 Release v0.0.1 (27/01/2024)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
