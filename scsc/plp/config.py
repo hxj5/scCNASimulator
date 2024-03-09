@@ -39,7 +39,9 @@ class Config:
         self.out_sample_fn = None
         self.out_ad_fn = None
         self.out_dp_fn = None
-        self.out_oth_fn = None   
+        self.out_oth_fn = None
+
+        self.umi_dir = None  
 
 
     def show(self, fp = None, prefix = ""):
@@ -84,6 +86,8 @@ class Config:
         s += "%soutput_ad_file = %s\n" % (prefix, self.out_ad_fn)
         s += "%soutput_dp_file = %s\n" % (prefix, self.out_dp_fn)
         s += "%soutput_oth_file = %s\n" % (prefix, self.out_oth_fn)
+
+        s += "%sumi_dir = %s\n" % (prefix, self.umi_dir)
         s += "%s\n" % prefix
 
         fp.write(s)

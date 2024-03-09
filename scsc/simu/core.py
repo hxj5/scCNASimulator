@@ -192,10 +192,10 @@ def __write_read(read, sam, umi, umi_tag, qname = None, idx = 0, umi_suffix_len 
 
 def simu_cnv(
     in_sam, out_sam,
-    cell_anno, cnv_profile, allele_umi,
+    allele_umi, cell_anno, cellreg_baf, cnv_profile,
     cell_tag, umi_tag,
     debug = 0
-):
+): 
     func = "simu_cnv"
 
     cnv_clones = cnv_profile.get_clones()
@@ -280,8 +280,12 @@ def simu_cnv(
                     __write_read(read, out_sam, umi, umi_tag)
                     continue
 
+                baf = cellreg_baf.query(cell, reg_id)
+                if baf is None:
+                    raise ValueError("[E::%s] invalid baf ('%s'-'%s')." %   \
+                        (func, cell, umi))
                 rand_f = np.random.rand()
-                if rand_f < 0.5:
+                if rand_f < 1 - baf:
                     cn = cn0
                 else:
                     cn = cn1

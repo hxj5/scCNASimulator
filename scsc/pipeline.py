@@ -23,6 +23,7 @@ class Config:
         self.cnv_profile_fn = None
         self.snp_fn = None
         self.barcode_fn = None
+        self.ref_cell_types_str = None
         self.debug = None
 
         self.cell_tag = None
@@ -53,6 +54,8 @@ def prepare_args(conf):
     assert_e(conf.cnv_profile_fn)
     assert_e(conf.snp_fn)
     assert_e(conf.barcode_fn)
+
+    assert_n(conf.ref_cell_types_str)
 
     conf.merged_cnv_profile_fn = os.path.join(conf.out_dir, "merged.cnv_profile.tsv")
 
@@ -103,9 +106,6 @@ def conf2plp_argv(conf):
         if not conf.no_orphan:
             args.append("--countORPHAN")
 
-    #cmdline = " ".join([str(x) for x in args])
-    #return(cmdline)
-
     args = [str(x) for x in args]
     return(args)
 
@@ -122,15 +122,16 @@ def conf2simu_argv(conf, plp_conf):
         args.extend(["--cellAnno", conf.cell_anno_fn])
     if conf.merged_cnv_profile_fn is not None:
         args.extend(["--cnvProfile", conf.merged_cnv_profile_fn])
+    if conf.ref_cell_types_str is not None:
+        args.extend(["--refCellTypes", conf.ref_cell_types_str])
     if conf.debug is not None:
         args.extend(["--debug", conf.debug])
+    assert_e(plp_conf.out_dir)
+    args.extend(["--BAFdir", plp_conf.out_dir])
     assert_e(plp_conf.umi_dir)
     args.extend(["--UMIdir", plp_conf.umi_dir])
     args.extend(["--cellTAG", plp_conf.cell_tag])
     args.extend(["--UMItag", plp_conf.umi_tag])
-
-    #cmdline = " ".join([str(x) for x in args])
-    #return(cmdline)
 
     args = [str(x) for x in args]
     return(args)
@@ -141,21 +142,22 @@ def usage(fp = stderr, plp_conf = None, simu_conf = None):
     s += "Usage: %s %s <options>\n" % (APP, COMMAND)  
     s += "\n" 
     s += "Options:\n"
-    s += "  -s, --sam FILE         Indexed sam/bam/cram file.\n"
-    s += "  -O, --outdir DIR       Output directory for sparse matrices.\n"
-    s += "      --cellAnno FILE    Cell annotation file, 2 columns <cell> <clone_id>.\n"
-    s += "      --cnvProfile FILE  CNV profile file, 6 columns.\n"
-    s += "  -P, --phasedSNP FILE   A TSV or VCF file listing phased SNPs (i.e., containing phased GT).\n"
-    s += "  -b, --barcode FILE     A plain file listing all effective cell barcode.\n"
-    s += "  -h, --help             Print this message and exit.\n"
-    s += "  -D, --debug INT        Used by developer for debugging [%d]\n" % plp_conf.DEBUG
+    s += "  -s, --sam FILE          Indexed sam/bam/cram file.\n"
+    s += "  -O, --outdir DIR        Output directory for sparse matrices.\n"
+    s += "      --cellAnno FILE     Cell annotation file, 2 columns <cell> <clone_id>.\n"
+    s += "      --cnvProfile FILE   CNV profile file, 6 columns.\n"
+    s += "  -P, --phasedSNP FILE    A TSV or VCF file listing phased SNPs (i.e., containing phased GT).\n"
+    s += "  -b, --barcode FILE      A plain file listing all effective cell barcode.\n"
+    s += "      --refCellTypes STR  Reference cell types, comma separated.\n"
+    s += "  -h, --help              Print this message and exit.\n"
+    s += "  -D, --debug INT         Used by developer for debugging [%d]\n" % plp_conf.DEBUG
     s += "\n"
     s += "Optional arguments:\n"
-    s += "  -p, --nproc INT        Number of processes [%d]\n" % plp_conf.NPROC
-    s += "  --cellTAG STR          Tag for cell barcodes [%s]\n" % plp_conf.CELL_TAG
-    s += "  --UMItag STR           Tag for UMI, set to None when reads only [%s]\n" % plp_conf.UMI_TAG
-    s += "  --minCOUNT INT         Mininum aggragated count for SNP [%d]\n" % plp_conf.MIN_COUNT
-    s += "  --minMAF FLOAT         Mininum minor allele fraction for SNP [%f]\n" % plp_conf.MIN_MAF
+    s += "  -p, --nproc INT         Number of processes [%d]\n" % plp_conf.NPROC
+    s += "  --cellTAG STR           Tag for cell barcodes [%s]\n" % plp_conf.CELL_TAG
+    s += "  --UMItag STR            Tag for UMI, set to None when reads only [%s]\n" % plp_conf.UMI_TAG
+    s += "  --minCOUNT INT          Mininum aggragated count for SNP [%d]\n" % plp_conf.MIN_COUNT
+    s += "  --minMAF FLOAT          Mininum minor allele fraction for SNP [%f]\n" % plp_conf.MIN_MAF
     s += "\n"
     s += "Read filtering:\n"
     s += "  --inclFLAG INT    Required flags: skip reads with all mask bits unset [%d]\n" % plp_conf.INCL_FLAG
@@ -195,6 +197,7 @@ def pipeline_main(argv):
                      "sam=", 
                      "outdir=", 
                      "cellAnno=", "cnvProfile=", "phasedSNP=", "barcode=",
+                     "refCellTypes=",
                      "help", "debug=",
                      "nproc=", 
                      "cellTAG=", "UMItag=", 
@@ -211,6 +214,7 @@ def pipeline_main(argv):
         elif op in (      "--cnvprofile"): conf.cnv_profile_fn = val
         elif op in ("-P", "--phasedsnp"): conf.snp_fn = val
         elif op in ("-b", "--barcode"): conf.barcode_fn = val
+        elif op in ("      --refcelltypes"): conf.ref_cell_types_str = val
         elif op in ("-h", "--help"): usage(stderr, plp_conf.defaults, simu_conf.defaults); sys.exit(1)
         elif op in ("-D", "--debug"): conf.debug = int(val)
 
@@ -263,5 +267,4 @@ COMMAND = "pipeline"
 
 
 if __name__ == "__main__":
-    pileline_main(sys.argv)
-
+    pipeline_main(sys.argv)

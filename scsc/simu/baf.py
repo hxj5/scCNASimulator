@@ -10,23 +10,40 @@ from scipy import sparse
 
 
 class BAFCellReg:
-    def __init__(self, adata, cell_anno, cell_type_key = "cell_type", theo = 0.5):
+    """calibrated / posterior BAF in each cell type group."""
+
+    def __init__(self, adata, cell_anno, cell_type_key = "cell_type", 
+        ref_cell_types = None, theo = 0.5):
         self.adata = adata
         self.cell_anno = cell_anno
         self.cell_type_key = cell_type_key
+        self.ref_cell_types = ref_cell_types
         self.theo = theo
 
         self.baf = self.__calc_baf()
 
     def __calc_baf(self):
         func = "BAFCellReg::__calc_baf"
-        group_key = self.cell_type_key
+
         adata = self.adata
+        cell_anno = self.cell_anno
+        cell_key = "cell"
+        group_key = self.cell_type_key
         theo = self.theo
 
         if group_key not in adata.obs.columns:
-            raise KeyError("[E::%s] cell type key '%s' not in adata." % (func, group_key))
+            if cell_key not in adata.obs.columns:
+                raise KeyError("[E::%s] cell key '%s' not in adata." % (func, cell_key))
+            adata.obs[group_key] = adata.obs[cell_key].map(cell_anno)
+            
         grouped = adata.obs.groupby(group_key)
+
+        # Note:
+        # for now, the simulation is assumed to be performed on normal
+        # cells or normal regions of tumor cells (e.g., chr3 on GX109),
+        # so here we calculate the allelic imbalance in every cell type,
+        # not using values of reference cells to replace the values of
+        # tumor/CNV cells.
 
         adata.layers["BAF"] = np.full(adata.shape, theo)
         for group, idx in grouped.indices.items():

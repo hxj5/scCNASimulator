@@ -15,7 +15,7 @@ exec(open("./scsc/app.py").read())
 with open(path.join(here, "README.rst"), encoding='utf-8') as f:
     long_description = f.read()
 
-reqs = ['numpy', 'pysam', 'intervaltree']
+reqs = ["anndata", "intervaltree", "numpy", "pandas", "pysam", "scipy"]
 
 setup(
     name = "scsc",
