@@ -40,11 +40,11 @@ def prepare_args(conf):
     assert_n(conf.cell_tag)
     assert_n(conf.umi_tag)
 
-    conf.merged_cnv_profile_fn = os.path.join(conf.out_dir, "merged.cnv_profile.tsv")
     conf.out_sam_fn = os.path.join(conf.out_dir, "out.bam")
-    conf.out_umi_stat_fn = os.path.join(conf.out_dir, "cnv_umi_stat.tsv")
+    conf.out_cnv_fn = os.path.join(conf.out_dir, "merged_cnv_profile.tsv")
     conf.out_feature_fn = os.path.join(conf.out_dir, "features.tsv")
     conf.out_cell_anno_fn = os.path.join(conf.out_dir, "cell_anno.tsv")
+    conf.out_umi_stat_fn = os.path.join(conf.out_dir, "cnv_umi_stat.tsv")
 
 
 def simu_core(argv, conf):
@@ -100,9 +100,9 @@ def simu_core(argv, conf):
 
         # merge CNV profile.
         stdout.write("[I::%s] merge CNV profile.\n" % func)
-        merge_cnv_profile(conf.cnv_profile_fn, conf.merged_cnv_profile_fn, 
+        merge_cnv_profile(conf.cnv_profile_fn, conf.out_cnv_fn, 
                                     max_gap = 1, verbose = True)
-        cnv_profile = load_cnv_profile(conf.merged_cnv_profile_fn, sep = "\t",
+        cnv_profile = load_cnv_profile(conf.out_cnv_fn, sep = "\t",
                                     verbose = True)
         
         # load features
@@ -121,6 +121,7 @@ def simu_core(argv, conf):
             cell_anno = cell_anno,
             cellreg_baf = cellreg_baf,
             cnv_profile = cnv_profile,
+            features = features,
             cell_tag = conf.cell_tag,
             umi_tag = conf.umi_tag,
             debug = conf.debug
@@ -231,6 +232,7 @@ def simu_main(argv, conf = None):
         elif op in ("--cellanno"): conf.cell_anno_fn = val
         elif op in ("--refcelltypes"): conf.ref_cell_types_str = val
         elif op in ("--cnvprofile"): conf.cnv_profile_fn = val
+        elif op in (" --feature"): conf.feature_fn = val
         elif op in ("--bafdir"): conf.baf_dir = val
         elif op in ("--umidir"): conf.umi_dir = val
         elif op in ("--version"): stderr.write("%s\n" % VERSION); sys.exit(1)

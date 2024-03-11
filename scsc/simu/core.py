@@ -192,7 +192,8 @@ def __write_read(read, sam, umi, umi_tag, qname = None, idx = 0, umi_suffix_len 
 
 def simu_cnv(
     in_sam, out_sam,
-    allele_umi, cell_anno, cellreg_baf, cnv_profile,
+    allele_umi, cell_anno, cellreg_baf, 
+    cnv_profile, features,
     cell_tag, umi_tag,
     debug = 0
 ): 
@@ -209,6 +210,7 @@ def simu_cnv(
     allele = None
     cn = None           # copy number
     reg_id_list = None
+    feature_id = None
 
     uc = UMICount()
 
@@ -264,7 +266,7 @@ def simu_cnv(
                 if not positions:
                     __write_read(read, out_sam, umi, umi_tag)
                     continue
-                start, end = positions[0] + 1, positions[-1] + 1  # 1-based
+                start, end = positions[0] + 1, positions[-1] + 1  # 1-based, inclusive
 
                 n, profile = cnv_profile.fetch(chrom, start, end + 1, clone)
                 if n < 0:
@@ -280,7 +282,15 @@ def simu_cnv(
                     __write_read(read, out_sam, umi, umi_tag)
                     continue
 
-                baf = cellreg_baf.query(cell, reg_id)
+                feature_hits = features.fetch(chrom, start, end + 1)
+                if feature_hits:
+                    feature_id = feature_hits[0]
+                else:
+                    uc.set_allele_invalid(cell, umi)
+                    __write_read(read, out_sam, umi, umi_tag)
+                    continue
+
+                baf = cellreg_baf.query(cell, feature_id)
                 if baf is None:
                     raise ValueError("[E::%s] invalid baf ('%s'-'%s')." %   \
                         (func, cell, umi))

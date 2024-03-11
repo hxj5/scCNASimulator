@@ -19,13 +19,14 @@ class Config:
     def __init__(self):
         self.sam_fn = None
         self.out_dir = None
-        self.cell_anno_fn = None
-        self.cnv_profile_fn = None
-        self.snp_fn = None
-        self.feature_fn = None
         self.barcode_fn = None
+
+        self.cell_anno_fn = None
         self.ref_cell_types_str = None
-        self.debug = None
+
+        self.cnv_profile_fn = None
+        self.feature_fn = None
+        self.snp_fn = None
 
         self.cell_tag = None
         self.umi_tag = None
@@ -34,6 +35,7 @@ class Config:
         self.min_maf = None
         self.output_all_reg = True
         self.no_dup_hap = True
+        self.debug = None
 
         self.min_mapq = None
         self.min_len = None
@@ -46,18 +48,18 @@ class Config:
 
 def prepare_args(conf):
     assert_e(conf.sam_fn)
+    assert_e(conf.barcode_fn)
 
     assert_n(conf.out_dir)
     if not os.path.exists(conf.out_dir):
         os.mkdir(conf.out_dir)
 
     assert_e(conf.cell_anno_fn)
-    assert_e(conf.cnv_profile_fn)
-    assert_e(conf.snp_fn)
-    assert_e(conf.feature_fn)
-    assert_e(conf.barcode_fn)
-
     assert_n(conf.ref_cell_types_str)
+
+    assert_e(conf.cnv_profile_fn)
+    assert_e(conf.feature_fn)
+    assert_e(conf.snp_fn)
 
     conf.merged_cnv_profile_fn = os.path.join(conf.out_dir, "merged.cnv_profile.tsv")
 
@@ -72,12 +74,11 @@ def conf2plp_argv(conf):
         args.extend(["--outdir", plp_dir])
     if conf.barcode_fn is not None:
         args.extend(["--barcode", conf.barcode_fn])
+
     if conf.feature_fn is not None:
         args.extend(["--region", conf.feature_fn])
     if conf.snp_fn is not None:
         args.extend(["--phasedSNP", conf.snp_fn])
-    if conf.debug is not None:
-        args.extend(["--debug", conf.debug])
 
     if conf.cell_tag is not None:
         args.extend(["--cellTAG", conf.cell_tag])
@@ -95,6 +96,8 @@ def conf2plp_argv(conf):
     if conf.no_dup_hap is not None:
         if not conf.no_dup_hap:
             args.append("--countDupHap")
+    if conf.debug is not None:
+        args.extend(["--debug", conf.debug])
 
     if conf.min_mapq is not None:
         args.extend(["--minMAPQ", conf.min_mapq])
@@ -120,22 +123,26 @@ def conf2simu_argv(conf, plp_conf):
     if conf.out_dir is not None:
         simu_dir = os.path.join(conf.out_dir, "simu")
         args.extend(["--outdir", simu_dir])
+
     if conf.cell_anno_fn is not None:
         args.extend(["--cellAnno", conf.cell_anno_fn])
     if conf.ref_cell_types_str is not None:
         args.extend(["--refCellTypes", conf.ref_cell_types_str])
+
     if conf.merged_cnv_profile_fn is not None:
         args.extend(["--cnvProfile", conf.merged_cnv_profile_fn])
     if conf.feature_fn is not None:
         args.extend(["--feature", conf.feature_fn])
-    if conf.debug is not None:
-        args.extend(["--debug", conf.debug])
+
     assert_e(plp_conf.out_dir)
     args.extend(["--BAFdir", plp_conf.out_dir])
     assert_e(plp_conf.umi_dir)
     args.extend(["--UMIdir", plp_conf.umi_dir])
+
     args.extend(["--cellTAG", plp_conf.cell_tag])
     args.extend(["--UMItag", plp_conf.umi_tag])
+    if conf.debug is not None:
+        args.extend(["--debug", conf.debug])
 
     args = [str(x) for x in args]
     return(args)
@@ -197,13 +204,10 @@ def pipeline_main(argv):
         usage(stderr, plp_conf.defaults, simu_conf.defaults)
         sys.exit(1)
 
-
     stdout.write("[I::%s] start ...\n" % (func, ))
 
     opts, args = getopt.getopt(argv[2:], "-s:-O:-b:-P:-h-p:-D:", [
-                    "sam=", 
-                    "outdir=",
-                    "barcode=",
+                    "sam=", "outdir=", "barcode=",
                     "cellAnno=", "refCellTypes=", 
                     "cnvProfile=", "feature=",
                     "phasedSNP=",

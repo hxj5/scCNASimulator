@@ -387,18 +387,16 @@ def pileup_main(argv, conf = None):
         sys.exit(1)
 
     opts, args = getopt.getopt(argv[2:], "-s:-O:-b:-R:-P:-h-p:-D:", [
-                     "sam=", 
-                     "outdir=",
-                     "barcode=",
-                     "region=", "phasedSNP=", 
-                     "help",
+                    "sam=", "outdir=", "barcode=",
+                    "region=", "phasedSNP=", 
+                    "help",
 
-                     "nproc=", 
-                     "cellTAG=", "UMItag=", 
-                     "minCOUNT=", "minMAF=", "outputAllReg", "countDupHap",
-                     "debug=",
+                    "nproc=", 
+                    "cellTAG=", "UMItag=", 
+                    "minCOUNT=", "minMAF=", "outputAllReg", "countDupHap",
+                    "debug=",
 
-                     "inclFLAG=", "exclFLAG=", "minLEN=", "minMAPQ=", "countORPHAN"
+                    "inclFLAG=", "exclFLAG=", "minLEN=", "minMAPQ=", "countORPHAN"
                 ])
 
     for op, val in opts:
