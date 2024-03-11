@@ -15,7 +15,7 @@ import sys
 from sys import stdout, stderr
 import time
 
-from .app import APP
+from .app import APP, VERSION
 from .blib.zfile import zopen, ZF_F_GZIP, ZF_F_PLAIN
 from .plp.config import Config, DefaultConfig
 from .plp.core import sp_count
@@ -336,27 +336,28 @@ def pileup_core(argv, conf):
 
 
 def usage(fp = stderr, conf = None):
-    s =  "\n" 
-    s += "Usage: %s %s <options>\n" % (APP, COMMAND)  
+    s =  "\n"
+    s += "Version: %s\n" % VERSION
+    s += "Usage:   %s %s <options>\n" % (APP, COMMAND)
     s += "\n" 
     s += "Options:\n"
     s += "  -s, --sam FILE         Indexed sam/bam/cram file.\n"
     s += "  -O, --outdir DIR       Output directory for sparse matrices.\n"
+    s += "  -b, --barcode FILE     A plain file listing all effective cell barcode.\n"
     s += "  -R, --region FILE      A TSV file listing target regions. The first 4 columns shoud be:\n"
     s += "                         chrom, start, end (both 1-based and inclusive), name.\n"
     s += "  -P, --phasedSNP FILE   A TSV or VCF file listing phased SNPs (i.e., containing phased GT).\n"
-    s += "  -b, --barcode FILE     A plain file listing all effective cell barcode.\n"
     s += "  -h, --help             Print this message and exit.\n"
-    s += "  -D, --debug INT        Used by developer for debugging [%d]\n" % conf.DEBUG
     s += "\n"
     s += "Optional arguments:\n"
     s += "  -p, --nproc INT        Number of processes [%d]\n" % conf.NPROC
-    s += "  --cellTAG STR          Tag for cell barcodes [%s]\n" % conf.CELL_TAG
-    s += "  --UMItag STR           Tag for UMI, set to None when reads only [%s]\n" % conf.UMI_TAG
-    s += "  --minCOUNT INT         Mininum aggragated count for SNP [%d]\n" % conf.MIN_COUNT
-    s += "  --minMAF FLOAT         Mininum minor allele fraction for SNP [%f]\n" % conf.MIN_MAF
-    s += "  --outputAllReg         If set, output all inputted regions.\n"
-    s += "  --countDupHap          If set, UMIs aligned to both haplotypes will be counted.\n"
+    s += "      --cellTAG STR      Tag for cell barcodes [%s]\n" % conf.CELL_TAG
+    s += "      --UMItag STR       Tag for UMI, set to None when reads only [%s]\n" % conf.UMI_TAG
+    s += "      --minCOUNT INT     Mininum aggragated count for SNP [%d]\n" % conf.MIN_COUNT
+    s += "      --minMAF FLOAT     Mininum minor allele fraction for SNP [%f]\n" % conf.MIN_MAF
+    s += "      --outputAllReg     If set, output all inputted regions.\n"
+    s += "      --countDupHap      If set, UMIs aligned to both haplotypes will be counted.\n"
+    s += "  -D, --debug INT        Used by developer for debugging [%d]\n" % conf.DEBUG
     s += "\n"
     s += "Read filtering:\n"
     s += "  --inclFLAG INT    Required flags: skip reads with all mask bits unset [%d]\n" % conf.INCL_FLAG
@@ -385,14 +386,18 @@ def pileup_main(argv, conf = None):
         usage(stderr, conf.defaults)
         sys.exit(1)
 
-    opts, args = getopt.getopt(argv[2:], "-s:-O:-R:-P:-b:-h-D:-p:", [
+    opts, args = getopt.getopt(argv[2:], "-s:-O:-b:-R:-P:-h-p:-D:", [
                      "sam=", 
-                     "outdir=", 
-                     "region=", "phasedSNP=", "barcode=",
-                     "help", "debug=",
+                     "outdir=",
+                     "barcode=",
+                     "region=", "phasedSNP=", 
+                     "help",
+
                      "nproc=", 
                      "cellTAG=", "UMItag=", 
                      "minCOUNT=", "minMAF=", "outputAllReg", "countDupHap",
+                     "debug=",
+
                      "inclFLAG=", "exclFLAG=", "minLEN=", "minMAPQ=", "countORPHAN"
                 ])
 
@@ -401,19 +406,19 @@ def pileup_main(argv, conf = None):
             op = op.lower()
         if op in   ("-s", "--sam"): conf.sam_fn = val
         elif op in ("-O", "--outdir"): conf.out_dir = val
+        elif op in ("-b", "--barcode"): conf.barcode_fn = val
         elif op in ("-R", "--region"): conf.region_fn = val
         elif op in ("-P", "--phasedsnp"): conf.snp_fn = val
-        elif op in ("-b", "--barcode"): conf.barcode_fn = val
         elif op in ("-h", "--help"): usage(stderr, conf.defaults); sys.exit(1)
-        elif op in ("-D", "--debug"): conf.debug = int(val)
 
         elif op in ("-p", "--nproc"): conf.nproc = int(val)
-        elif op in ("--celltag"): conf.cell_tag = val
-        elif op in ("--umitag"): conf.umi_tag = val
-        elif op in ("--mincount"): conf.min_count = int(val)
-        elif op in ("--minmaf"): conf.min_maf = float(val)
-        elif op in ("--outputallreg"): conf.output_all_reg = True
-        elif op in ("--countduphap"): conf.no_dup_hap = False
+        elif op in (      "--celltag"): conf.cell_tag = val
+        elif op in (      "--umitag"): conf.umi_tag = val
+        elif op in (      "--mincount"): conf.min_count = int(val)
+        elif op in (      "--minmaf"): conf.min_maf = float(val)
+        elif op in (      "--outputallreg"): conf.output_all_reg = True
+        elif op in (      "--countduphap"): conf.no_dup_hap = False
+        elif op in ("-D", "--debug"): conf.debug = int(val)
 
         elif op in ("--inclflag"): conf.incl_flag = int(val)
         elif op in ("--exclflag"): conf.excl_flag = int(val)

@@ -6,7 +6,7 @@ import os
 import sys
 from sys import stdout, stderr
 
-from .app import APP
+from .app import APP, VERSION
 from .blib.w_assert import assert_e, assert_n
 from .pileup import pileup_main
 from .plp.config import Config as PlpConfig
@@ -22,6 +22,7 @@ class Config:
         self.cell_anno_fn = None
         self.cnv_profile_fn = None
         self.snp_fn = None
+        self.feature_fn = None
         self.barcode_fn = None
         self.ref_cell_types_str = None
         self.debug = None
@@ -53,6 +54,7 @@ def prepare_args(conf):
     assert_e(conf.cell_anno_fn)
     assert_e(conf.cnv_profile_fn)
     assert_e(conf.snp_fn)
+    assert_e(conf.feature_fn)
     assert_e(conf.barcode_fn)
 
     assert_n(conf.ref_cell_types_str)
@@ -68,12 +70,12 @@ def conf2plp_argv(conf):
     if conf.out_dir is not None:
         plp_dir = os.path.join(conf.out_dir, "pileup")
         args.extend(["--outdir", plp_dir])
-    if conf.merged_cnv_profile_fn is not None:
-        args.extend(["--region", conf.merged_cnv_profile_fn])
-    if conf.snp_fn is not None:
-        args.extend(["--phasedSNP", conf.snp_fn])
     if conf.barcode_fn is not None:
         args.extend(["--barcode", conf.barcode_fn])
+    if conf.feature_fn is not None:
+        args.extend(["--region", conf.feature_fn])
+    if conf.snp_fn is not None:
+        args.extend(["--phasedSNP", conf.snp_fn])
     if conf.debug is not None:
         args.extend(["--debug", conf.debug])
 
@@ -120,10 +122,12 @@ def conf2simu_argv(conf, plp_conf):
         args.extend(["--outdir", simu_dir])
     if conf.cell_anno_fn is not None:
         args.extend(["--cellAnno", conf.cell_anno_fn])
-    if conf.merged_cnv_profile_fn is not None:
-        args.extend(["--cnvProfile", conf.merged_cnv_profile_fn])
     if conf.ref_cell_types_str is not None:
         args.extend(["--refCellTypes", conf.ref_cell_types_str])
+    if conf.merged_cnv_profile_fn is not None:
+        args.extend(["--cnvProfile", conf.merged_cnv_profile_fn])
+    if conf.feature_fn is not None:
+        args.extend(["--feature", conf.feature_fn])
     if conf.debug is not None:
         args.extend(["--debug", conf.debug])
     assert_e(plp_conf.out_dir)
@@ -138,26 +142,28 @@ def conf2simu_argv(conf, plp_conf):
 
 
 def usage(fp = stderr, plp_conf = None, simu_conf = None):
-    s =  "\n" 
-    s += "Usage: %s %s <options>\n" % (APP, COMMAND)  
+    s =  "\n"
+    s += "Version: %s\n" % VERSION
+    s += "Usage:   %s %s <options>\n" % (APP, COMMAND)
     s += "\n" 
     s += "Options:\n"
     s += "  -s, --sam FILE          Indexed sam/bam/cram file.\n"
     s += "  -O, --outdir DIR        Output directory for sparse matrices.\n"
-    s += "      --cellAnno FILE     Cell annotation file, 2 columns <cell> <clone_id>.\n"
-    s += "      --cnvProfile FILE   CNV profile file, 6 columns.\n"
-    s += "  -P, --phasedSNP FILE    A TSV or VCF file listing phased SNPs (i.e., containing phased GT).\n"
     s += "  -b, --barcode FILE      A plain file listing all effective cell barcode.\n"
+    s += "      --cellAnno FILE     Cell annotation file, 2 columns <cell> <clone_id>.\n"
     s += "      --refCellTypes STR  Reference cell types, comma separated.\n"
+    s += "      --cnvProfile FILE   CNV profile file, 7 columns.\n"
+    s += "      --feature FILE      Feature annotation file, typically for genes; 4 columns.\n"
+    s += "  -P, --phasedSNP FILE    A TSV or VCF file listing phased SNPs (i.e., containing phased GT).\n"
     s += "  -h, --help              Print this message and exit.\n"
-    s += "  -D, --debug INT         Used by developer for debugging [%d]\n" % plp_conf.DEBUG
     s += "\n"
     s += "Optional arguments:\n"
     s += "  -p, --nproc INT         Number of processes [%d]\n" % plp_conf.NPROC
-    s += "  --cellTAG STR           Tag for cell barcodes [%s]\n" % plp_conf.CELL_TAG
-    s += "  --UMItag STR            Tag for UMI, set to None when reads only [%s]\n" % plp_conf.UMI_TAG
-    s += "  --minCOUNT INT          Mininum aggragated count for SNP [%d]\n" % plp_conf.MIN_COUNT
-    s += "  --minMAF FLOAT          Mininum minor allele fraction for SNP [%f]\n" % plp_conf.MIN_MAF
+    s += "      --cellTAG STR       Tag for cell barcodes [%s]\n" % plp_conf.CELL_TAG
+    s += "      --UMItag STR        Tag for UMI, set to None when reads only [%s]\n" % plp_conf.UMI_TAG
+    s += "      --minCOUNT INT      Mininum aggragated count for SNP [%d]\n" % plp_conf.MIN_COUNT
+    s += "      --minMAF FLOAT      Mininum minor allele fraction for SNP [%f]\n" % plp_conf.MIN_MAF
+    s += "  -D, --debug INT         Used by developer for debugging [%d]\n" % plp_conf.DEBUG
     s += "\n"
     s += "Read filtering:\n"
     s += "  --inclFLAG INT    Required flags: skip reads with all mask bits unset [%d]\n" % plp_conf.INCL_FLAG
@@ -168,8 +174,9 @@ def usage(fp = stderr, plp_conf = None, simu_conf = None):
     s += "  --countORPHAN     If use, do not skip anomalous read pairs.\n"
     s += "\n"
     s += "Note:\n"
-    s += "For file format details of '--cellAnno', '--cnvProfile', and '--phasedSNP', please\n"
-    s += "see https://github.com/hxj5/scCNVSimulator/blob/master/docs/manual.rst\n"
+    s += "For file format details of '--cellAnno', '--cnvProfile', '--feature', and\n"
+    s += "'--phasedSNP', please see the full manual at\n"
+    s += "https://github.com/hxj5/scCNVSimulator/blob/master/docs/manual.rst\n"
     s += "\n"
 
     fp.write(s)
@@ -193,16 +200,21 @@ def pipeline_main(argv):
 
     stdout.write("[I::%s] start ...\n" % (func, ))
 
-    opts, args = getopt.getopt(argv[2:], "-s:-O:-P:-b:-h-D:-p:", [
-                     "sam=", 
-                     "outdir=", 
-                     "cellAnno=", "cnvProfile=", "phasedSNP=", "barcode=",
-                     "refCellTypes=",
-                     "help", "debug=",
-                     "nproc=", 
-                     "cellTAG=", "UMItag=", 
-                     "minCOUNT=", "minMAF=", 
-                     "inclFLAG=", "exclFLAG=", "minLEN=", "minMAPQ=", "countORPHAN"
+    opts, args = getopt.getopt(argv[2:], "-s:-O:-b:-P:-h-p:-D:", [
+                    "sam=", 
+                    "outdir=",
+                    "barcode=",
+                    "cellAnno=", "refCellTypes=", 
+                    "cnvProfile=", "feature=",
+                    "phasedSNP=",
+                    "help",
+
+                    "nproc=", 
+                    "cellTAG=", "UMItag=", 
+                    "minCOUNT=", "minMAF=", 
+                    "debug=",
+                    
+                    "inclFLAG=", "exclFLAG=", "minLEN=", "minMAPQ=", "countORPHAN"
                 ])
 
     for op, val in opts:
@@ -210,19 +222,20 @@ def pipeline_main(argv):
             op = op.lower()
         if op in   ("-s", "--sam"): conf.sam_fn = val
         elif op in ("-O", "--outdir"): conf.out_dir = val
-        elif op in (      "--cellanno"): conf.cell_anno_fn = val
-        elif op in (      "--cnvprofile"): conf.cnv_profile_fn = val
-        elif op in ("-P", "--phasedsnp"): conf.snp_fn = val
         elif op in ("-b", "--barcode"): conf.barcode_fn = val
-        elif op in ("      --refcelltypes"): conf.ref_cell_types_str = val
+        elif op in (      "--cellanno"): conf.cell_anno_fn = val
+        elif op in (      "--refcelltypes"): conf.ref_cell_types_str = val
+        elif op in (      "--cnvprofile"): conf.cnv_profile_fn = val
+        elif op in (      "--feature"): conf.feature_fn = val
+        elif op in ("-P", "--phasedsnp"): conf.snp_fn = val
         elif op in ("-h", "--help"): usage(stderr, plp_conf.defaults, simu_conf.defaults); sys.exit(1)
-        elif op in ("-D", "--debug"): conf.debug = int(val)
 
         elif op in ("-p", "--nproc"): conf.nproc = int(val)
         elif op in ("--celltag"): conf.cell_tag = val
         elif op in ("--umitag"): conf.umi_tag = val
         elif op in ("--mincount"): conf.min_count = int(val)
         elif op in ("--minmaf"): conf.min_maf = float(val)
+        elif op in ("-D", "--debug"): conf.debug = int(val)
 
         elif op in ("--inclflag"): conf.incl_flag = int(val)
         elif op in ("--exclflag"): conf.excl_flag = int(val)

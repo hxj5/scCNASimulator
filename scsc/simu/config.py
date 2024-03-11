@@ -13,12 +13,14 @@ class Config:
         self.out_dir = None
 
         self.cell_anno_fn = None
-        self.cnv_profile_fn = None
-        self.baf_dir = None
-        self.umi_dir = None
-
         self.ref_cell_types_str = None
         self.ref_cell_types = None
+
+        self.cnv_profile_fn = None
+        self.feature_fn = None
+
+        self.baf_dir = None
+        self.umi_dir = None
 
         self.cell_tag = self.defaults.CELL_TAG
         self.umi_tag = self.defaults.UMI_TAG
@@ -32,6 +34,8 @@ class Config:
         self.umi_fn_suffix = ".tsv"
 
         self.out_sam_fn = None
+        self.out_feature_fn = None
+        self.out_cell_anno_fn = None
         self.out_umi_stat_fn = None
 
 
@@ -43,10 +47,12 @@ class Config:
         s += "%ssam_file = %s\n" % (prefix, self.sam_fn)
         s += "%sout_dir = %s\n" % (prefix, self.out_dir)
         s += "%scell_anno_fn = %s\n" % (prefix, self.cell_anno_fn)
+        s += "%sref_cell_types = %s\n" % (prefix, self.ref_cell_types_str)
         s += "%scnv_profile_fn = %s\n" % (prefix, self.cnv_profile_fn)
+        s += "%sfeature_fn = %s\n" % (prefix, self.feature_fn)
         s += "%sbaf_dir = %s\n" % (prefix, self.baf_dir)
         s += "%sumi_dir = %s\n" % (prefix, self.umi_dir)
-        s += "%sref_cell_types = %s\n" % (prefix, self.ref_cell_types_str)
+
         s += "%scell_tag = %s\n" % (prefix, self.cell_tag)
         s += "%sumi_tag = %s\n" % (prefix, self.umi_tag)
         s += "%sdebug = %d\n" % (prefix, self.debug)
@@ -57,6 +63,8 @@ class Config:
         s += "%sumi_fn_prefix = %s\n" % (prefix, self.umi_fn_prefix)
         s += "%sumi_fn_suffix = %s\n" % (prefix, self.umi_fn_suffix)
         s += "%sout_sam_file = %s\n" % (prefix, self.out_sam_fn)
+        s += "%sout_feature_file = %s\n" % (prefix, self.out_feature_fn)
+        s += "%sout_cell_anno_file = %s\n" % (prefix, self.out_cell_anno_fn)
         s += "%sout_umi_stat_file = %s\n" % (prefix, self.out_umi_stat_fn)
         s += "%s\n" % prefix
 

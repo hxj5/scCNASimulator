@@ -27,13 +27,14 @@ def prepare_args(conf):
         os.mkdir(conf.out_dir)
 
     assert_e(conf.cell_anno_fn)
-    assert_e(conf.cnv_profile_fn)
-    assert_e(conf.baf_dir)
-    assert_e(conf.umi_dir)
-
     assert_n(conf.ref_cell_types_str)
     conf.ref_cell_types = [s.strip().strip('"') for s in \
         conf.ref_cell_types_str.split(",")]
+
+    assert_e(conf.cnv_profile_fn)
+    assert_e(conf.feature_fn)
+    assert_e(conf.baf_dir)
+    assert_e(conf.umi_dir)
 
     assert_n(conf.cell_tag)
     assert_n(conf.umi_tag)
@@ -41,6 +42,8 @@ def prepare_args(conf):
     conf.merged_cnv_profile_fn = os.path.join(conf.out_dir, "merged.cnv_profile.tsv")
     conf.out_sam_fn = os.path.join(conf.out_dir, "out.bam")
     conf.out_umi_stat_fn = os.path.join(conf.out_dir, "cnv_umi_stat.tsv")
+    conf.out_feature_fn = os.path.join(conf.out_dir, "features.tsv")
+    conf.out_cell_anno_fn = os.path.join(conf.out_dir, "cell_anno.tsv")
 
 
 def simu_core(argv, conf):
@@ -168,21 +171,24 @@ def simu_core(argv, conf):
 def usage(fp = stderr, conf = None):
     s =  "\n" 
     s += "Version: %s\n" % (VERSION, )
-    s += "Usage: %s %s <options>\n" % (APP, COMMAND)
+    s += "Usage:   %s %s <options>\n" % (APP, COMMAND)
     s += "\n" 
     s += "Options:\n"
     s += "  --sam FILE             Indexed BAM/SAM/CRAM file.\n"
     s += "  --outdir DIR           Output dir.\n"
     s += "  --cellAnno FILE        Cell annotation file, 2 columns.\n"
+    s += "  --refCellTypes STR     Reference cell types, comma separated.\n"
     s += "  --cnvProfile FILE      CNV profile file, 7 columns.\n"
+    s += "  --feature FILE         Feature annotation file, typically for genes; 4 columns.\n"
     s += "  --BAFdir DIR           Dir storing cell-region BAF matrix.\n"
     s += "  --UMIdir DIR           Dir storing region-specific UMI files.\n"
-    s += "  --refCellTypes STR     Reference cell types, comma separated.\n"
+    s += "  --version              Print version and exit.\n"
+    s += "  --help                 Print this message and exit.\n"
+    s += "\n"
+    s += "Optional arguments:\n"
     s += "  --cellTAG STR          Cell barcode tag [%s]\n" % conf.CELL_TAG
     s += "  --UMItag STR           UMI tag [%s]\n" % conf.UMI_TAG
     s += "  --debug INT            Debug level, only for developer [%d]\n" % conf.DEBUG
-    s += "  --version              Print version and exit.\n"
-    s += "  --help                 Print this message and exit.\n"
     s += "\n"
 
     fp.write(s)
@@ -201,12 +207,13 @@ def simu_main(argv, conf = None):
     opts, args = getopt.getopt(argv[2:], "", [
         "sam=",
         "outdir=",
-        "cellAnno=", "cnvProfile=",
+        "cellAnno=", "refCellTypes=",
+        "cnvProfile=", "feature=",
         "BAFdir=", "UMIdir=",
-        "refCellTypes=",
+        "version", "help",
+        
         "cellTAG=", "UMItag=",
-        "debug=",
-        "version", "help"
+        "debug="
     ])
 
     for op, val in opts:
@@ -215,15 +222,16 @@ def simu_main(argv, conf = None):
         if op in ("--sam"): conf.sam_fn = val
         elif op in ("--outdir"): conf.out_dir = val
         elif op in ("--cellanno"): conf.cell_anno_fn = val
+        elif op in ("--refcelltypes"): conf.ref_cell_types_str = val
         elif op in ("--cnvprofile"): conf.cnv_profile_fn = val
         elif op in ("--bafdir"): conf.baf_dir = val
         elif op in ("--umidir"): conf.umi_dir = val
-        elif op in ("--refcelltypes"): conf.ref_cell_types_str = val
+        elif op in ("--version"): stderr.write("%s\n" % VERSION); sys.exit(1)
+        elif op in ("--help"): usage(); sys.exit(1)
+
         elif op in ("--celltag"): conf.cell_tag = val
         elif op in ("--umitag"): conf.umi_tag = val
         elif op in ("--debug"): conf.debug = int(val)
-        elif op in ("--version"): stderr.write("%s\n" % VERSION); sys.exit(1)
-        elif op in ("--help"): usage(); sys.exit(1)
         else:
             stderr.write("[E::%s] invalid option: '%s'.\n" % (func, op))
             return(-1)
