@@ -292,8 +292,8 @@ def simu_cnv(
 
                 baf = cellreg_baf.query(cell, feature_id)
                 if baf is None:
-                    raise ValueError("[E::%s] invalid baf ('%s'-'%s')." %   \
-                        (func, cell, umi))
+                    raise ValueError("[E::%s] invalid baf for feature '%s' ('%s'-'%s')." %   \
+                        (func, feature_id, cell, umi))
                 rand_f = np.random.rand()
                 if rand_f < 1 - baf:
                     cn = cn0

@@ -88,8 +88,8 @@ def load_allele_umi(fn_list, verbose = False):
             ret = au.add(cell, reg_id, umi, ale_idx)
             if ret != 0:
                 if verbose:
-                    stderr.write("[W::%s] UMI '%s' is not uniquely aligned to one allele.\n" % \
-                            (func, umi))
+                    stderr.write("[W::%s] '%s'-'%s' is not uniquely aligned to one allele.\n" % \
+                            (func, cell, umi))
         fp.close()
 
     return(au)
