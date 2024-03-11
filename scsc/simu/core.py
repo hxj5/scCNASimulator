@@ -256,35 +256,35 @@ def simu_cnv(
         # check whether the read has allele information.
         rec_allele = uc.get_allele(cell, umi)
         if rec_allele is None:
+            chrom = read.reference_name
+            if not chrom:
+                __write_read(read, out_sam, umi, umi_tag)
+                continue
+            positions = read.get_reference_positions()        # 0-based
+            if not positions:
+                __write_read(read, out_sam, umi, umi_tag)
+                continue
+            start, end = positions[0] + 1, positions[-1] + 1  # 1-based, inclusive
+
+            n, profile = cnv_profile.fetch(chrom, start, end + 1, clone)
+            if n < 0:
+                raise ValueError("[E::%s] CNVProfile fetch failed; errcode '%d' ('%s'-'%s')." % \
+                    (func, n, cell, umi))
+            elif n == 0:           # not in CNV regions
+                __write_read(read, out_sam, umi, umi_tag)
+                continue
+            elif n == 1:
+                cn0, cn1, reg_id = profile[0][:3]
+            else:         # overlap multiple CNV regions (with distinct CNV profiles).
+                uc.set_allele_invalid(cell, umi)
+                __write_read(read, out_sam, umi, umi_tag)
+                continue
+
             res = allele_umi.query(cell, umi)
             if res is None:     # no allele info; region info to be checked.
-                chrom = read.reference_name
-                if not chrom:
-                    __write_read(read, out_sam, umi, umi_tag)
-                    continue
-                positions = read.get_reference_positions()        # 0-based
-                if not positions:
-                    __write_read(read, out_sam, umi, umi_tag)
-                    continue
-                start, end = positions[0] + 1, positions[-1] + 1  # 1-based, inclusive
-
-                n, profile = cnv_profile.fetch(chrom, start, end + 1, clone)
-                if n < 0:
-                    raise ValueError("[E::%s] CNVProfile fetch failed for ambiguous UMIs ('%s'-'%s')." % \
-                        (func, cell, umi))
-                elif n == 0:           # not in CNV regions
-                    __write_read(read, out_sam, umi, umi_tag)
-                    continue
-                elif n == 1:
-                    cn0, cn1, reg_id = profile[0][:3]
-                else:         # overlap multiple CNV regions (with distinct CNV profiles).
-                    uc.set_allele_invalid(cell, umi)
-                    __write_read(read, out_sam, umi, umi_tag)
-                    continue
-
                 feature_hits = features.fetch(chrom, start, end + 1)
                 if feature_hits:
-                    feature_id = feature_hits[0]
+                    feature_id = (feature_hits[0]).get_id()
                 else:
                     uc.set_allele_invalid(cell, umi)
                     __write_read(read, out_sam, umi, umi_tag)
@@ -305,30 +305,12 @@ def simu_cnv(
                 uc.set_region(cell, umi, reg_id)
 
             else:               # UMI has allele info and overlaps CNV regions.
-                allele, reg_id_list = res[:2]
-                if len(reg_id_list) == 1:
-                    if allele not in (0, 1):
-                        raise ValueError("[E::%s] allele '%s' should be 0 or 1 ('%s'-'%s')." % \
-                            (func, allele, cell, umi))
-                else:      # the UMI has allele info; but overlap with multiple regions.
-                    uc.set_allele_invalid(cell, umi)
-                    __write_read(read, out_sam, umi, umi_tag)
-                    continue
-                reg_id = reg_id_list[0]
-
-                n, profile = cnv_profile.query(reg_id, clone)
-                if n < 0:
-                    raise ValueError("[E::%s] CNVProfile query failed for ambiguous UMIs ('%s'-'%s')." % \
-                        (func, cell, umi))
-                elif n == 0:      # not in CNV regions
-                    __write_read(read, out_sam, umi, umi_tag)
-                    continue
-                elif n == 1:
-                    cn0, cn1, reg_id = profile[0][:3]
-                else:         # overlap multiple CNV regions (with distinct CNV profiles).
-                    uc.set_allele_invalid(cell, umi)
-                    __write_read(read, out_sam, umi, umi_tag)
-                    continue
+                allele, feature_id_list = res[:2]
+                if allele not in (0, 1):
+                    raise ValueError("[E::%s] allele '%s' should be 0 or 1 ('%s'-'%s')." % \
+                        (func, allele, cell, umi))
+                #assert len(feature_id_list) > 0
+                #feature_id = feature_id_list[0]
 
                 if allele == 0:
                     uc.set_allele_a0(cell, umi)

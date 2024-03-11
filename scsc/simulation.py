@@ -77,8 +77,8 @@ def simu_core(argv, conf):
         cell_anno = load_cell_anno(conf.cell_anno_fn)
         save_cell_anno(cell_anno, conf.out_cell_anno_fn)
 
-        # load cell-region BAF matrix
-        stdout.write("[I::%s] load cell-region BAF matrix.\n" % func)
+        # load cell-feature BAF matrix
+        stdout.write("[I::%s] load cell-feature BAF matrix.\n" % func)
         baf_io = BAFIO(conf.baf_dir, conf.baf_fn_prefix)
         baf_adata = baf_io.load_data()
         baf_adata = baf_adata.transpose()
@@ -87,8 +87,8 @@ def simu_core(argv, conf):
             stderr.write("[D::%s] baf_adata is:\n" % func)
             stderr.write("%s\n" % str(baf_adata))
         
-        # calc cell-region BAF (allelic imbalance information)
-        stdout.write("[I::%s] calc cell-region BAF (allelic imbalance).\n" % func)
+        # calc cell-feature BAF (allelic imbalance information)
+        stdout.write("[I::%s] calc cell-feature BAF (allelic imbalance).\n" % func)
         cellreg_baf = BAFCellReg(baf_adata, cell_anno,   \
             cell_type_key = "cell_type",
             ref_cell_types = conf.ref_cell_types,
