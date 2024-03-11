@@ -30,6 +30,7 @@ class BAFCellReg:
         cell_key = "cell"
         group_key = self.cell_type_key
         theo = self.theo
+        pseudo_counts = [5, 10]    # for AD, DP
 
         if group_key not in adata.obs.columns:
             if cell_key not in adata.obs.columns:
@@ -47,8 +48,8 @@ class BAFCellReg:
 
         adata.layers["BAF"] = np.full(adata.shape, theo)
         for group, idx in grouped.indices.items():
-            reg_AD = adata.X[idx, :].sum(axis = 0)
-            reg_DP = adata.layers["DP"][idx, :].sum(axis = 0)
+            reg_AD = adata.X[idx, :].sum(axis = 0) + pseudo_counts[0]
+            reg_DP = adata.layers["DP"][idx, :].sum(axis = 0) + pseudo_counts[1]
             adata.layers["BAF"][idx, :] = (adata.X[idx, :] + reg_AD) /      \
                 (adata.layers["DP"][idx, :] + reg_DP + 1e-8)
 

@@ -345,4 +345,3 @@ def simu_cnv(
 
     uc_stat = uc.stat()
     return(uc_stat)
-
