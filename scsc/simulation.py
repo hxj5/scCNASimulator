@@ -17,7 +17,7 @@ from .simu.core import simu_cnv
 from .simu.allele import load_allele_umi
 from .simu.cnv import load_cnv_profile, merge_cnv_profile
 from .simu.config import Config
-from .simu.utils import load_cell_anno
+from .simu.utils import load_cell_anno, save_cell_anno
 
 
 def prepare_args(conf):
@@ -74,6 +74,7 @@ def simu_core(argv, conf):
         # load clone annotation.
         stdout.write("[I::%s] load clone annotation.\n" % func)
         cell_anno = load_cell_anno(conf.cell_anno_fn)
+        save_cell_anno(cell_anno, conf.out_cell_anno_fn)
 
         # load cell-region BAF matrix
         stdout.write("[I::%s] load cell-region BAF matrix.\n" % func)
