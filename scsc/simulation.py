@@ -17,7 +17,8 @@ from .simu.core import simu_cnv
 from .simu.allele import load_allele_umi
 from .simu.cnv import load_cnv_profile, merge_cnv_profile
 from .simu.config import Config
-from .simu.utils import load_cell_anno, save_cell_anno
+from .simu.utils import load_cell_anno, save_cell_anno, \
+                        load_features, save_features
 
 
 def prepare_args(conf):
@@ -103,6 +104,11 @@ def simu_core(argv, conf):
                                     max_gap = 1, verbose = True)
         cnv_profile = load_cnv_profile(conf.merged_cnv_profile_fn, sep = "\t",
                                     verbose = True)
+        
+        # load features
+        stdout.write("[I::%s] load features.\n" % func)
+        features = load_features(conf.feature_fn)
+        save_features(features, conf.out_feature_fn)
     
         # simulate copy number variations.
         stdout.write("[I::%s] simulate copy number variations.\n" % func)
