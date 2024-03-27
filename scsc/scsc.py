@@ -14,7 +14,7 @@ from .simulation import simu_main
 def usage(fp = stderr):
     s =  "\n" 
     s += "Version: %s\n" % (VERSION, )
-    s += "Usage: %s [commands|options]\n" % (APP, )  
+    s += "Usage:   %s [commands|options]\n" % (APP, )  
     s += "\n" 
     s += "Commands:\n"
     s += "  pipeline          Run all steps.\n"
