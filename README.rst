@@ -1,20 +1,20 @@
-scCNVSimulator
+scCNASimulator
 ==============
 
-scCNVSimulator: CNV Simulation in droplet-based scRNA-seq data
+scCNASimulator: CNA Simulation in droplet-based scRNA-seq data
 --------------------------------------------------------------
 
-The tool is a python package designed for CNV simulation in droplet-based 
+The tool is a python package designed for CNA simulation in droplet-based 
 scRNA-seq data.
-It mainly takes a indexed BAM file and clone-specific CNV profile as input,
-and output a new indexed BAM file containing the desired CNV alignments.
+It mainly takes a indexed BAM file and clone-specific CNA profile as input,
+and output a new indexed BAM file containing the desired CNA alignments.
 
 The tool has three modules: ``pileup``, ``simu``, and ``pipeline``.
 
 * The ``pileup`` module pileups allele-specific UMIs in each single cell.
-* The ``simu`` module simulates CNVs by forking or discarding UMIs (both the
+* The ``simu`` module simulates CNAs by forking or discarding UMIs (both the
   allele-specific and ambiguous UMIs) based on the given a clone-specific 
-  CNV profile, and output a new indexed BAM file.
+  CNA profile, and output a new indexed BAM file.
 * The ``pipeline`` module is a wrapper that runs sequentially both ``pileup``
   and ``simu`` modules.
 
@@ -42,7 +42,7 @@ Installation
 
 .. code-block:: bash
 
-   pip install -U git+https://github.com/hxj5/scCNVSimulator
+   pip install -U git+https://github.com/hxj5/scCNASimulator
 
 
 Manual
@@ -63,5 +63,5 @@ Acknowledgement
 ---------------
 
 
-.. _issue: https://github.com/hxj5/scCNVSimulator/issues
+.. _issue: https://github.com/hxj5/scCNASimulator/issues
 
