@@ -3,6 +3,18 @@
    History
    =======
 
+Release v0.0.3 (07/03/2024)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The simulation is now performmed in gene scale and take allelic imbalance
+into consideration.
+
+Feature enhancement:
+
+* simu: output cell annotations and features.
+* simu: use feature ID instead of region ID.
+* manual: replace ``CNV`` with ``CNA``.
+
+
 Release v0.0.2 (07/03/2024)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Bug fix:
