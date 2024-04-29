@@ -1,7 +1,7 @@
 # utils.py - utils
 
-from ..blib.region import Region, RegionSet
-from ..blib.zfile import zopen
+from ..utils.region import Region, RegionSet
+from ..utils.zfile import zopen
 
 
 def load_cell_anno(fn):

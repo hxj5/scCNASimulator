@@ -4,8 +4,8 @@
 
 from sys import stdout, stderr
 
-from ..blib.region import Region, RegionSet, format_start, format_end
-from ..blib.zfile import zopen
+from ..utils.region import Region, RegionSet, format_start, format_end
+from ..utils.zfile import zopen
 
 
 class SNP(Region):

@@ -2,7 +2,7 @@
 
 
 import sys
-from ..blib.region import format_chrom
+from ..utils.region import format_chrom
 
 
 class Config:

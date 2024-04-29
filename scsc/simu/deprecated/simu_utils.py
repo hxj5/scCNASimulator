@@ -3,8 +3,8 @@
 
 import numpy as np
 
-from .blib.region import format_chrom, format_start, format_end
-from .blib.zfile import zopen
+from .utils.region import format_chrom, format_start, format_end
+from .utils.zfile import zopen
 
 
 # @param cells A list.

@@ -7,8 +7,8 @@ import pysam
 import sys
 from sys import stdout, stderr
 
-from ..blib.sam import sam_fetch, BAM_FPAIRED, BAM_FPROPER_PAIR
-from ..blib.zfile import zopen, ZF_F_GZIP
+from ..utils.sam import sam_fetch, BAM_FPAIRED, BAM_FPROPER_PAIR
+from ..utils.zfile import zopen, ZF_F_GZIP
 from .mcount import MCount
 
 

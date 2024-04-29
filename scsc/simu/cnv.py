@@ -5,9 +5,9 @@ import functools
 import sys
 from sys import stdout, stderr
 
-from ..blib.region import format_chrom, format_start, format_end,  \
+from ..utils.region import format_chrom, format_start, format_end,  \
                     Region, RegionSet, reg2str
-from ..blib.zfile import zopen
+from ..utils.zfile import zopen
 
 
 class CNVRegCN(Region):

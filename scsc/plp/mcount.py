@@ -2,7 +2,7 @@
 # Author: Xianjie Huang
 
 
-from ..blib.sam import get_query_bases
+from ..utils.sam import get_query_bases
 
 
 class UCount:

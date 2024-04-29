@@ -3,8 +3,8 @@
 import os
 from sys import stdout, stderr
 
-from ..blib.region import Region, RegionSet
-from ..blib.zfile import zopen
+from ..utils.region import Region, RegionSet
+from ..utils.zfile import zopen
 from .region import load_snp_from_tsv, load_snp_from_vcf
 
 

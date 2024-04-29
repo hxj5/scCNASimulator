@@ -10,8 +10,8 @@ from sys import stdout, stderr
 import time
 
 from .app import APP, VERSION
-from .blib.w_assert import assert_e, assert_n
-from .blib.region import format_chrom
+from .utils.base import assert_e, assert_n
+from .utils.region import format_chrom
 from .simu.baf import BAFIO, BAFCellReg
 from .simu.core import simu_cnv
 from .simu.allele import load_allele_umi

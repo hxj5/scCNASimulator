@@ -16,7 +16,7 @@ from sys import stdout, stderr
 import time
 
 from .app import APP, VERSION
-from .blib.zfile import zopen, ZF_F_GZIP, ZF_F_PLAIN
+from .utils.zfile import zopen, ZF_F_GZIP, ZF_F_PLAIN
 from .plp.config import Config, DefaultConfig
 from .plp.core import sp_count
 from .plp.region import load_region_from_txt, load_snp_from_vcf, \
