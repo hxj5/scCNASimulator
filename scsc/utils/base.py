@@ -10,7 +10,7 @@ def assert_e(path):
 
 
 def assert_n(var):
-    if var is None or not var:
+    if var is None or (isinstance(var, str) and len(var) == 0):
         raise ValueError
 
 
