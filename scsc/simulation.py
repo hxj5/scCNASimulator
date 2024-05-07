@@ -10,8 +10,6 @@ from sys import stdout, stderr
 import time
 
 from .app import APP, VERSION
-from .utils.base import assert_e, assert_n
-from .utils.region import format_chrom
 from .simu.baf import BAFIO, BAFCellReg
 from .simu.core import simu_cnv
 from .simu.allele import load_allele_umi
@@ -19,6 +17,9 @@ from .simu.cnv import load_cnv_profile, merge_cnv_profile
 from .simu.config import Config
 from .simu.utils import load_cell_anno, save_cell_anno, \
                         load_features, save_features
+from .utils.base import assert_e, assert_n
+from .utils.region import format_chrom
+from .utils.xlog import log_debug, log_err, log_info
 
 
 def prepare_args(conf):
@@ -48,24 +49,23 @@ def prepare_args(conf):
 
 
 def simu_core(argv, conf):
-    func = "simu_core"
     ret = -1
-    cmdline = "[%s] unexpected command line" % func
+    cmdline = "unexpected command line"
 
     start_time = time.time()
 
     try:
         time_str = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(start_time))
-        stdout.write("[I::%s] start time: %s.\n" % (func, time_str))
+        log_info("start time: %s." % time_str)
 
         cmdline = " ".join(argv)
-        stdout.write("[I::%s] CMD: %s\n" % (func, cmdline))
+        log_info("CMD: %s" % cmdline)
     
         prepare_args(conf)
         conf.show(stderr)
 
         # load allele-specific UMIs.
-        stdout.write("[I::%s] load allele-specific UMIs.\n" % func)
+        log_info("load allele-specific UMIs ...")
         fn_list = []
         for fn in os.listdir(conf.umi_dir):
             if fn.startswith(conf.umi_fn_prefix) and fn.endswith(conf.umi_fn_suffix):
@@ -73,45 +73,45 @@ def simu_core(argv, conf):
         allele_umi = load_allele_umi(fn_list, verbose = True)
     
         # load clone annotation.
-        stdout.write("[I::%s] load clone annotation.\n" % func)
+        log_info("load clone annotation ...")
         cell_anno = load_cell_anno(conf.cell_anno_fn)
         save_cell_anno(cell_anno, conf.out_cell_anno_fn)
 
         # load cell-feature BAF matrix
-        stdout.write("[I::%s] load cell-feature BAF matrix.\n" % func)
+        log_info("load cell-feature BAF matrix ...")
         baf_io = BAFIO(conf.baf_dir, conf.baf_fn_prefix)
         baf_adata = baf_io.load_data()
         baf_adata = baf_adata.transpose()
 
         if conf.debug:
-            stderr.write("[D::%s] baf_adata is:\n" % func)
-            stderr.write("%s\n" % str(baf_adata))
+            log_debug("baf_adata is:")
+            log_debug(str(baf_adata))
         
         # calc cell-feature BAF (allelic imbalance information)
-        stdout.write("[I::%s] calc cell-feature BAF (allelic imbalance).\n" % func)
+        log_info("calc cell-feature BAF (allelic imbalance) ...")
         cellreg_baf = BAFCellReg(baf_adata, cell_anno,   \
             cell_type_key = "cell_type",
             ref_cell_types = conf.ref_cell_types,
             theo = 0.5)
         
         if conf.debug:
-            stderr.write("[D::%s] cellreg_baf is:\n" % func)
-            stderr.write("%s\n" % str(cellreg_baf.baf))
+            log_debug("cellreg_baf is:")
+            log_debug(str(cellreg_baf.baf))
 
         # merge CNV profile.
-        stdout.write("[I::%s] merge CNV profile.\n" % func)
+        log_info("merge CNV profile ...")
         merge_cnv_profile(conf.cnv_profile_fn, conf.out_cnv_fn, 
                                     max_gap = 1, verbose = True)
         cnv_profile = load_cnv_profile(conf.out_cnv_fn, sep = "\t",
                                     verbose = True)
         
         # load features
-        stdout.write("[I::%s] load features.\n" % func)
+        log_info("load features ...")
         features = load_features(conf.feature_fn)
         save_features(features, conf.out_feature_fn)
     
         # simulate copy number variations.
-        stdout.write("[I::%s] simulate copy number variations.\n" % func)
+        log_info("simulate copy number variations ...")
         in_sam = pysam.AlignmentFile(conf.sam_fn, "rb")
         out_sam = pysam.AlignmentFile(conf.out_sam_fn, "wb", template = in_sam)
         umi_stat = simu_cnv(
@@ -130,11 +130,11 @@ def simu_core(argv, conf):
         out_sam.close()
 
         # index the BAM file
-        stdout.write("[I::%s] index the BAM file.\n" % func)
+        log_info("index the BAM file ...")
         pysam.index(conf.out_sam_fn)
 
         # output UMI stat
-        stdout.write("[I::%s] output UMI statistics.\n" % func)
+        log_info("output UMI statistics ...")
         fp = open(conf.out_umi_stat_fn, "w")
         s_keys = ("cell", "clone", "region",
                     "A0", "A0_amp", "A0_del",
@@ -157,21 +157,21 @@ def simu_core(argv, conf):
         fp.close()
 
     except ValueError as e:
-        stderr.write("[E::%s] '%s'\n" % (func, str(e)))
-        stdout.write("[E::%s] Running program failed.\n" % func)
-        stdout.write("[E::%s] Quiting ...\n" % func)
+        log_err(str(e))
+        log_err("Running program failed.")
+        log_err("Quiting ...")
         ret = -1
 
     else:
-        stdout.write("[I::%s] All Done!\n" % func)
+        log_info("All Done!")
         ret = 0
 
     finally:
-        stdout.write("[I::%s] CMD: %s\n" % (func, cmdline))
+        log_info("CMD: %s" % cmdline)
         end_time = time.time()
         time_str = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(end_time))
-        stdout.write("[I::%s] end time: %s\n" % (func, time_str))
-        stdout.write("[I::%s] time spent: %.2fs\n" % (func, end_time - start_time))
+        log_info("end time: %s" % time_str)
+        log_info("time spent: %.2fs" % end_time - start_time)
 
     return(ret)
             
@@ -203,8 +203,6 @@ def usage(fp = stderr, conf = None):
 
 
 def simu_main(argv, conf = None):
-    func = "simu_main"
-
     if conf is None:
         conf = Config()
 
@@ -235,14 +233,14 @@ def simu_main(argv, conf = None):
         elif op in (" --feature"): conf.feature_fn = val
         elif op in ("--bafdir"): conf.baf_dir = val
         elif op in ("--umidir"): conf.umi_dir = val
-        elif op in ("--version"): stderr.write("%s\n" % VERSION); sys.exit(1)
+        elif op in ("--version"): log_err("%s\n" % VERSION); sys.exit(1)
         elif op in ("--help"): usage(); sys.exit(1)
 
         elif op in ("--celltag"): conf.cell_tag = val
         elif op in ("--umitag"): conf.umi_tag = val
         elif op in ("--debug"): conf.debug = int(val)
         else:
-            stderr.write("[E::%s] invalid option: '%s'.\n" % (func, op))
+            log_err("invalid option: '%s'.\n" % op)
             return(-1)
 
     ret = simu_core(argv, conf)

@@ -3,12 +3,14 @@
 
 import os
 import sys
+
 from sys import stdout, stderr
 
 from .app import APP, VERSION
 from .pileup import pileup_main
 from .pipeline import pipeline_main
 from .simulation import simu_main
+from .utils.xlog import log_err
 
 
 def usage(fp = stderr):
@@ -30,8 +32,6 @@ def usage(fp = stderr):
 
 
 def main():
-    func = "main"
-
     if len(sys.argv) <= 1:
         usage(stderr)
         sys.exit(1)
@@ -43,7 +43,7 @@ def main():
     elif cmd in ("-V", "--version"): stderr.write("%s\n" % VERSION); sys.exit(1)
     elif cmd in ("-h", "--help"): usage(); sys.exit(1)
     else:
-        stderr.write("[E::%s] invalid command: '%s'.\n" % (func, cmd))
+        log_err("invalid command: '%s'." % cmd)
         return(-1) 
 
 

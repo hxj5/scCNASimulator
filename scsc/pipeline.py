@@ -4,15 +4,17 @@
 import getopt
 import os
 import sys
+
 from sys import stdout, stderr
 
 from .app import APP, VERSION
-from .utils.base import assert_e, assert_n
 from .pileup import pileup_main
 from .plp.config import Config as PlpConfig
 from .simu.cnv import merge_cnv_profile
 from .simu.config import Config as SimuConfig
 from .simulation import simu_main
+from .utils.base import assert_e, assert_n
+from .utils.xlog import log_err, log_info
 
 
 class Config:
@@ -194,8 +196,6 @@ def pipeline_main(argv):
     @param argv   A list of cmdline parameters [list]
     @return       0 if success, -1 otherwise [int]
     """
-    func = "pipeline_main"
-
     conf = Config()
     plp_conf = PlpConfig()
     simu_conf = SimuConfig()
@@ -204,22 +204,25 @@ def pipeline_main(argv):
         usage(stderr, plp_conf.defaults, simu_conf.defaults)
         sys.exit(1)
 
-    stdout.write("[I::%s] start ...\n" % (func, ))
+    log_info("start ...")
 
-    opts, args = getopt.getopt(argv[2:], "-s:-O:-b:-P:-h-p:-D:", [
-                    "sam=", "outdir=", "barcode=",
-                    "cellAnno=", "refCellTypes=", 
-                    "cnvProfile=", "feature=",
-                    "phasedSNP=",
-                    "help",
+    opts, args = getopt.getopt(
+        args = argv[2:], 
+        shortopts = "-s:-O:-b:-P:-h-p:-D:", 
+        longopts = [
+            "sam=", "outdir=", "barcode=",
+            "cellAnno=", "refCellTypes=", 
+            "cnvProfile=", "feature=",
+            "phasedSNP=",
+            "help",
 
-                    "nproc=", 
-                    "cellTAG=", "UMItag=", 
-                    "minCOUNT=", "minMAF=", 
-                    "debug=",
+            "nproc=", 
+            "cellTAG=", "UMItag=", 
+            "minCOUNT=", "minMAF=", 
+            "debug=",
                     
-                    "inclFLAG=", "exclFLAG=", "minLEN=", "minMAPQ=", "countORPHAN"
-                ])
+            "inclFLAG=", "exclFLAG=", "minLEN=", "minMAPQ=", "countORPHAN"
+        ])
 
     for op, val in opts:
         if len(op) > 2:
@@ -248,35 +251,35 @@ def pipeline_main(argv):
         elif op in ("--countorphan"): conf.no_orphan = False
 
         else:
-            stderr.write("[E::%s] invalid option: '%s'.\n" % (func, op))
+            log_err("invalid option: '%s'." % op)
             return(-1)
 
-    stdout.write("[I::%s] check parameters ...\n" % (func, ))
+    log_info("check parameters ...")
 
     prepare_args(conf)
 
-    stdout.write("[I::%s] merge clone-specific CNV profile ...\n" % (func, ))
+    log_info("merge clone-specific CNV profile ...")
 
     merge_cnv_profile(conf.cnv_profile_fn, conf.merged_cnv_profile_fn, 
                     max_gap = 1, verbose = True)
 
-    stdout.write("[I::%s] pileup allele-specific UMIs ...\n" % (func, ))
+    log_info("pileup allele-specific UMIs ...")
 
     plp_argv = conf2plp_argv(conf)
     ret = pileup_main(plp_argv, plp_conf)
     if ret < 0:
-        stderr.write("[E::%s] pileup failed; errcode %d.\n" % (func, ret))
+        log_err("pileup failed; errcode %d." % ret)
         return(ret)
 
-    stdout.write("[I::%s] simulate CNVs ...\n" % (func, ))
+    log_info("simulate CNVs ...")
 
     simu_argv = conf2simu_argv(conf, plp_conf)
     ret = simu_main(simu_argv, simu_conf)
     if ret < 0:
-        stderr.write("[E::%s] simulation failed; errcode %d.\n" % (func, ret))
+        log_err("simulation failed; errcode %d." % ret)
         return(ret)
 
-    stdout.write("[I::%s] All Done!\n" % (func, ))
+    log_info("All Done!")
     return(0)
     
 
