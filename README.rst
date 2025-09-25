@@ -1,6 +1,13 @@
 scCNASimulator
 ==============
 
+
+Notice
+------
+The updated versions of the simulator can be found at https://github.com/hxj5/scCNASim
+
+======================================================================================
+
 scCNASimulator: CNA Simulation in droplet-based scRNA-seq data
 --------------------------------------------------------------
 
